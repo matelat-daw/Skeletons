@@ -1,17 +1,8 @@
-/* CSS mínimo personalizado: solo ajustes no cubiertos por Bootstrap */
-html, body {
-    height: 100%;
-}
-body {
-    min-height: 100vh;
-}
-
 main#main-content {
     flex: 1;
     padding-bottom: 2rem;
 }
 
-/* Centrar verticalmente el contenido en la pantalla de login/register */
 @media (min-width: 768px) {
   .container.py-5 {
     min-height: 80vh;
