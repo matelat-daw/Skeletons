@@ -1,16 +1,9 @@
 // Función para cargar páginas dinámicamente
 function loadPage(page) {
-    // Colapsar navbar en móviles
-    const navbarCollapse = document.getElementById('navbarNav');
-    if (navbarCollapse && navbarCollapse.classList.contains('show')) {
-        // Verificar si Bootstrap está disponible
-        if (typeof bootstrap !== 'undefined') {
-            const bsCollapse = new bootstrap.Collapse(navbarCollapse);
-            bsCollapse.hide();
-        } else {
-            // Fallback manual
-            navbarCollapse.classList.remove('show');
-        }
+    // Colapsar navbar en móviles (estructura original)
+    const menu = document.getElementById('menu');
+    if (menu && menu.classList.contains('active')) {
+        menu.classList.remove('active');
     }
     
     // Mostrar indicador de carga
@@ -20,7 +13,7 @@ function loadPage(page) {
         return;
     }
     
-    mainContent.innerHTML = '<div class="loading"><i class="bi bi-hourglass-split me-2"></i>Cargando...</div>';
+    mainContent.innerHTML = '<div class="loading">Cargando...</div>';
     
     // Usar Fetch API para cargar la página
     fetch('load_page.php?page=' + encodeURIComponent(page))
@@ -51,8 +44,7 @@ function loadPage(page) {
         .catch(error => {
             console.error('Error:', error);
             mainContent.innerHTML = `
-                <div class="alert alert-danger" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
+                <div class="error">
                     <strong>Error:</strong> ${error.message}
                 </div>
             `;
@@ -60,22 +52,20 @@ function loadPage(page) {
 }
 
 function updateActiveMenuItem(page) {
-    // Remover clase active de todos los enlaces
-    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
-    navLinks.forEach(link => {
+    // Remover clase active de todos los enlaces (estructura original)
+    const menuLinks = document.querySelectorAll('#menu a');
+    menuLinks.forEach(link => {
         link.classList.remove('active');
-        link.style.backgroundColor = '';
     });
     
     // Agregar clase active al enlace correspondiente
     const activeLink = document.getElementById('nav-' + page);
     if (activeLink) {
         activeLink.classList.add('active');
-        activeLink.style.backgroundColor = '#555';
     }
 }
 
-// Funciones para el modal de login - ENFOQUE ORIGINAL
+// Funciones para el modal de login - ENFOQUE ORIGINAL SIMPLIFICADO
 function showLoginModal() {
     console.log('Iniciando showLoginModal...');
     
@@ -85,64 +75,18 @@ function showLoginModal() {
         existingModal.remove();
     }
     
-    // Crear modal base sin contenido
+    // Crear modal base
     const modalHTML = `
-        <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-            <!-- El contenido se cargará aquí vía AJAX -->
+        <div class="modal" id="loginModal">
+            <div class="loading">Cargando formulario de login...</div>
         </div>
     `;
     
     // Agregar al final del body
     document.body.insertAdjacentHTML('beforeend', modalHTML);
     
-    // Esperar a que Bootstrap esté disponible y luego mostrar modal
-    waitForBootstrap(function() {
-        const modal = document.getElementById('loginModal');
-        if (modal && typeof bootstrap !== 'undefined') {
-            console.log('Bootstrap disponible, cargando contenido del modal...');
-            
-            try {
-                // Cargar contenido primero, luego mostrar modal
-                loadLoginContent();
-                
-            } catch (error) {
-                console.error('Error al crear modal Bootstrap:', error);
-                showModalManually();
-            }
-        } else {
-            console.error('Bootstrap no disponible o modal no encontrado');
-            showModalManually();
-        }
-    });
-}
-
-// Fallback manual para mostrar modal
-function showModalManually() {
-    console.log('Mostrando modal manualmente...');
-    const modal = document.getElementById('loginModal');
-    if (modal) {
-        // Cargar contenido primero
-        loadLoginContent();
-        
-        // Mostrar modal manualmente después de cargar contenido
-        setTimeout(() => {
-            // Agregar backdrop manualmente
-            const backdrop = document.createElement('div');
-            backdrop.className = 'modal-backdrop fade show';
-            backdrop.style.zIndex = '1050';
-            document.body.appendChild(backdrop);
-            
-            // Mostrar modal manualmente
-            modal.style.display = 'block';
-            modal.style.zIndex = '1055';
-            modal.classList.add('show');
-            modal.setAttribute('aria-modal', 'true');
-            modal.setAttribute('role', 'dialog');
-            
-            document.body.classList.add('modal-open');
-            document.body.style.paddingRight = '0px';
-        }, 300);
-    }
+    // Cargar contenido del modal
+    loadLoginContent();
 }
 
 function loadLoginContent() {
@@ -154,20 +98,7 @@ function loadLoginContent() {
     
     console.log('Cargando contenido del login desde load_page.php...');
     
-    // Mostrar indicador de carga mientras se carga el contenido
-    modal.innerHTML = `
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center p-5">
-                    <div class="loading">
-                        <i class="bi bi-hourglass-split me-2"></i>Cargando formulario de login...
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Usar Fetch API para cargar el contenido del modal desde html/login/index.php
+    // Usar Fetch API para cargar el contenido del modal
     fetch('load_page.php?page=login')
         .then(response => {
             console.log('Respuesta recibida:', response.status);
@@ -182,23 +113,9 @@ function loadLoginContent() {
             // Insertar el contenido cargado directamente en el modal
             modal.innerHTML = data;
             
-            // Ahora mostrar el modal con Bootstrap
-            if (typeof bootstrap !== 'undefined') {
-                try {
-                    const bsModal = new bootstrap.Modal(modal, {
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    bsModal.show();
-                } catch (error) {
-                    console.error('Error al mostrar modal con Bootstrap:', error);
-                    // Fallback manual
-                    showModalManuallyAfterLoad();
-                }
-            } else {
-                // Fallback manual
-                showModalManuallyAfterLoad();
-            }
+            // Mostrar el modal
+            modal.classList.add('show');
+            modal.style.display = 'block';
             
             // Enfocar el primer campo del formulario
             const emailField = document.getElementById('login-email');
@@ -216,58 +133,22 @@ function loadLoginContent() {
         .catch(error => {
             console.error('Error al cargar login:', error);
             modal.innerHTML = `
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-body">
-                            <div class="alert alert-danger" role="alert">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                <strong>Error:</strong> ${error.message}
-                            </div>
-                            <div class="text-center">
-                                <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Cerrar</button>
-                            </div>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Error</h2>
+                        <span class="close" onclick="closeLoginModal()">&times;</span>
+                    </div>
+                    <div class="auth-form">
+                        <div class="error">
+                            <strong>Error:</strong> ${error.message}
                         </div>
+                        <button type="button" class="btn-submit" onclick="closeLoginModal()">Cerrar</button>
                     </div>
                 </div>
             `;
-            
-            // Mostrar modal con error
-            if (typeof bootstrap !== 'undefined') {
-                try {
-                    const bsModal = new bootstrap.Modal(modal, {
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    bsModal.show();
-                } catch (error) {
-                    showModalManuallyAfterLoad();
-                }
-            } else {
-                showModalManuallyAfterLoad();
-            }
+            modal.classList.add('show');
+            modal.style.display = 'block';
         });
-}
-
-// Función auxiliar para mostrar modal manualmente después de cargar contenido
-function showModalManuallyAfterLoad() {
-    const modal = document.getElementById('loginModal');
-    if (modal) {
-        // Agregar backdrop manualmente
-        const backdrop = document.createElement('div');
-        backdrop.className = 'modal-backdrop fade show';
-        backdrop.style.zIndex = '1050';
-        document.body.appendChild(backdrop);
-        
-        // Mostrar modal manualmente
-        modal.style.display = 'block';
-        modal.style.zIndex = '1055';
-        modal.classList.add('show');
-        modal.setAttribute('aria-modal', 'true');
-        modal.setAttribute('role', 'dialog');
-        
-        document.body.classList.add('modal-open');
-        document.body.style.paddingRight = '0px';
-    }
 }
 
 function closeLoginModal() {
@@ -275,52 +156,16 @@ function closeLoginModal() {
     const modal = document.getElementById('loginModal');
     if (!modal) return;
     
-    try {
-        // Intentar cerrar con Bootstrap
-        if (typeof bootstrap !== 'undefined') {
-            const bsModal = bootstrap.Modal.getInstance(modal);
-            if (bsModal) {
-                bsModal.hide();
-            }
-        }
-        
-        // Cerrar manualmente como fallback
-        modal.style.display = 'none';
-        modal.classList.remove('show');
-        modal.setAttribute('aria-hidden', 'true');
-        modal.removeAttribute('aria-modal');
-        modal.removeAttribute('role');
-        
-        // Remover backdrop
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) {
-            backdrop.remove();
-        }
-        
-        // Restaurar body
-        document.body.classList.remove('modal-open');
-        document.body.style.paddingRight = '';
-        document.body.style.overflow = '';
-        
-        // Remover modal del DOM después de un delay
-        setTimeout(() => {
-            if (modal && modal.parentNode) {
-                modal.remove();
-            }
-        }, 300);
-        
-    } catch (error) {
-        console.error('Error al cerrar modal:', error);
-        // Forzar limpieza
+    // Cerrar modal
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+    
+    // Remover modal del DOM después de un delay
+    setTimeout(() => {
         if (modal && modal.parentNode) {
             modal.remove();
         }
-        document.body.classList.remove('modal-open');
-        document.body.style.paddingRight = '';
-        document.body.style.overflow = '';
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) backdrop.remove();
-    }
+    }, 300);
 }
 
 // Función para cerrar modal después de login exitoso
@@ -345,8 +190,8 @@ function handleLoginSubmit(event) {
     // Aquí puedes agregar la lógica de autenticación
     console.log('Login attempt:', { email, password });
     
-    // Simulación de login exitoso con toast
-    showToast('¡Login exitoso!', 'success');
+    // Simulación de login exitoso
+    alert('¡Login exitoso!');
     closeLoginModalAfterSuccess();
 }
 
@@ -387,59 +232,8 @@ function handleRegisterSubmit(event) {
     console.log('Register attempt:', { name, email, password });
     
     // Simulación de registro exitoso
-    showToast('¡Registro exitoso!', 'success');
+    alert('¡Registro exitoso!');
     loadPage('home');
-}
-
-// Función para mostrar toasts
-function showToast(message, type = 'info') {
-    waitForBootstrap(function() {
-        try {
-            const toastId = 'toast-' + Date.now();
-            const iconClass = type === 'success' ? 'bi-check-circle' : 
-                             type === 'danger' ? 'bi-exclamation-triangle' : 'bi-info-circle';
-            
-            const toastHTML = `
-                <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}">
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            <i class="bi ${iconClass} me-2"></i>${message}
-                        </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                </div>
-            `;
-            
-            // Crear contenedor de toasts si no existe
-            let toastContainer = document.getElementById('toast-container');
-            if (!toastContainer) {
-                toastContainer = document.createElement('div');
-                toastContainer.id = 'toast-container';
-                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-                toastContainer.style.zIndex = '9999';
-                document.body.appendChild(toastContainer);
-            }
-            
-            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
-            
-            const toastElement = document.getElementById(toastId);
-            const toast = new bootstrap.Toast(toastElement, {
-                autohide: true,
-                delay: 3000
-            });
-            
-            toast.show();
-            
-            // Remover el toast del DOM después de que se oculte
-            toastElement.addEventListener('hidden.bs.toast', () => {
-                toastElement.remove();
-            });
-        } catch (error) {
-            console.error('Error al mostrar toast:', error);
-            // Fallback: usar alert
-            alert(message);
-        }
-    });
 }
 
 // Manejar el botón atrás del navegador
@@ -452,21 +246,9 @@ window.addEventListener('popstate', function(event) {
     }
 });
 
-// Función para esperar a que Bootstrap esté disponible
-function waitForBootstrap(callback) {
-    if (window.bootstrapReady && typeof bootstrap !== 'undefined') {
-        callback();
-    } else {
-        document.addEventListener('bootstrapReady', callback, { once: true });
-    }
-}
-
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
-    // Esperar a que Bootstrap esté disponible antes de inicializar
-    waitForBootstrap(function() {
-        console.log('Aplicación inicializada con Bootstrap disponible');
-    });
+    console.log('Aplicación inicializada');
     
     // Verificar si hay un parámetro de página en la URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -476,6 +258,16 @@ document.addEventListener('DOMContentLoaded', function() {
         updateActiveMenuItem(currentPage);
     } else {
         updateActiveMenuItem('home');
+    }
+    
+    // Toggle para menú móvil (estructura original)
+    const menuToggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('menu');
+    
+    if (menuToggle && menu) {
+        menuToggle.addEventListener('click', function() {
+            menu.classList.toggle('active');
+        });
     }
     
     // Event listener para el formulario de registro (se agrega dinámicamente)
