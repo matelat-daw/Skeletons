@@ -4,7 +4,7 @@ include "html/header.php";
 include "html/navbar.php";
 ?>
 
-<main id="main-content">
+<main id="main-content" class="flex-grow-1">
     <?php include "html/home/index.php"; ?>
 </main>
 
