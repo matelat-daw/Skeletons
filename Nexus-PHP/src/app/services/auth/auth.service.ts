@@ -5,7 +5,7 @@ import { User } from '../../models/user';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   constructor(private authGoogle: SocialAuthService) {}
-  private API_URL = 'http://localhost:8080/api/Auth';
+  private API_URL = 'http://localhost:8080/Skeletons/PHP-API-NEXUS/api/';
   private passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).{8,}$/;
   private emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -55,7 +55,7 @@ export class AuthService {
     if (!password2 || password !== password2) errors.push('password2: Las contraseñas no coinciden.');
     if (errors.length > 0) this.handleErrors(errors);
     return await this.fetchAndHandle(
-      `${this.API_URL}/Register`,
+      `${this.API_URL}Auth/Register`,
       { method: 'POST', body: formData },
       { 'Nick': 'nick: El nombre de usuario ya está registrado.', 'E-mail': 'email: El email ya está registrado.' }
     );
@@ -67,20 +67,63 @@ export class AuthService {
     if (email && !this.emailRegex.test(email)) errors.push('email: Formato de email inválido.');
     if (!password) errors.push('password: La contraseña es obligatoria.');
     if (errors.length > 0) this.handleErrors(errors);
-    const responseText = await this.fetchAndHandle(
-      `${this.API_URL}/Login`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }),
-      credentials: 'include'
-     }
-    );
-    if (/Confirmado|confirmado/.test(responseText)) this.handleErrors(['global: Email no verificado. Por favor revisa tu correo.']);
-    sessionStorage.setItem('login_method', 'local');
-    this.token.set(responseText);
+    
+    try {
+      console.log('Intentando login con:', { email, url: `${this.API_URL}/Login` });
+      
+      const response = await fetch(`${this.API_URL}Auth/Login`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
+      });
+      
+      console.log('Respuesta del servidor:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error del servidor:', errorText);
+        this.handleErrors([`HTTP ${response.status}: ${errorText}`]);
+      }
+      
+      const responseData = await response.json();
+      console.log('Datos de respuesta:', responseData);
+      
+      if (responseData.message?.includes('confirmado') || responseData.message?.includes('verificado')) {
+        this.handleErrors(['global: Email no verificado. Por favor revisa tu correo.']);
+      }
+      
+      if (responseData.data?.token) {
+        sessionStorage.setItem('auth_token', responseData.data.token);
+        sessionStorage.setItem('login_method', 'local');
+        this.token.set(responseData.data.token);
+        
+        if (responseData.data.user) {
+          this.user.set(responseData.data.user);
+        }
+      } else {
+        // Para el endpoint simple, usar el token fake
+        sessionStorage.setItem('auth_token', responseData.data?.token || 'fake_token');
+        sessionStorage.setItem('login_method', 'local');
+        this.token.set(responseData.data?.token || 'fake_token');
+      }
+      
+    } catch (error) {
+      console.error('Error en login:', error);
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        this.handleErrors(['Error de conexión. Verifica que el servidor esté funcionando.']);
+      } else {
+        throw error;
+      }
+    }
   }
 
   async googleLogin(token: string): Promise<void> {
     const responseText = await this.fetchAndHandle(
-      `${this.API_URL}/GoogleLogin`,
+      `${this.API_URL}Auth/GoogleLogin`,
       { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) }
     );
     // sessionStorage.setItem('auth_token', responseText);
@@ -90,7 +133,7 @@ export class AuthService {
 
   async logout(): Promise<void> {
     await this.fetchAndHandle(
-      'http://localhost:8080/api/Account/Logout',
+      `${this.API_URL}Account/Logout`,
       { method: 'POST', credentials: 'include' }
     );
     const loginMethod = sessionStorage.getItem('login_method');

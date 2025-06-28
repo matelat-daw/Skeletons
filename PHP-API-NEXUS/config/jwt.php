@@ -1,11 +1,14 @@
 <?php
+// Cargar variables de entorno
+require_once __DIR__ . '/env.php';
+
 class JWTHandler {
     private $secret_key;
     private $algorithm = 'HS256';
     
     public function __construct() {
-        // Clave secreta desde variable de entorno o usar una por defecto (cambiar en producción)
-        $this->secret_key = getenv('JWT_SECRET') ?: $_ENV['JWT_SECRET'] ?: 'tu_clave_secreta_super_segura_cambiar_en_produccion';
+        // Clave secreta desde variable de entorno
+        $this->secret_key = $_ENV['JWT_SECRET'] ?? 'tu_clave_secreta_super_segura_cambiar_en_produccion';
     }
     
     public function generateToken($userId, $email, $nick = null) {
@@ -69,6 +72,30 @@ class JWTHandler {
                 'samesite' => 'Lax' // Protección CSRF
             ]
         );
+    }
+    
+    public function getTokenFromCookie($name = 'auth_token') {
+        return $_COOKIE[$name] ?? null;
+    }
+    
+    public function clearCookie($name = 'auth_token') {
+        setcookie(
+            $name,
+            '',
+            [
+                'expires' => time() - 3600, // Expira en el pasado
+                'path' => '/',
+                'domain' => '', // Debe coincidir con el dominio usado al crear la cookie
+                'secure' => false, // Cambiar a true en HTTPS
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]
+        );
+        
+        // También eliminar de $_COOKIE para esta ejecución
+        if (isset($_COOKIE[$name])) {
+            unset($_COOKIE[$name]);
+        }
     }
 }
 ?>

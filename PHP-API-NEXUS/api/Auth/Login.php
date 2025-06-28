@@ -1,22 +1,52 @@
 <?php
-// Headers para CORS y tipo de contenido
-header("Access-Control-Allow-Origin: http://localhost:4200"); // Ajustar según tu frontend
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-header("Access-Control-Max-Age: 3600");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+// Configuración de CORS robusta para desarrollo
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$allowedOrigins = [
+    'http://localhost:4200',
+    'http://localhost:8080',
+    'http://127.0.0.1:4200',
+    'http://127.0.0.1:8080',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+];
 
-// Manejar preflight requests
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+// Verificar si es un origen permitido o si es desarrollo local
+$isAllowed = false;
+if (in_array($origin, $allowedOrigins)) {
+    $isAllowed = true;
+} else if (strpos($origin, 'localhost') !== false || strpos($origin, '127.0.0.1') !== false) {
+    $isAllowed = true;
+}
+
+// Establecer cabeceras CORS
+if ($isAllowed || empty($origin)) {
+    if (!empty($origin)) {
+        header("Access-Control-Allow-Origin: $origin");
+    } else {
+        header("Access-Control-Allow-Origin: *");
+    }
+    header("Access-Control-Allow-Credentials: true");
+} else {
+    header("Access-Control-Allow-Origin: *");
+}
+
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Csrf-Token");
+header("Access-Control-Max-Age: 86400");
+
+// Manejar preflight requests OPTIONS
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
+// Headers de contenido
+header("Content-Type: application/json; charset=UTF-8");
+
 // Incluir archivos necesarios
-include_once '../config/database.php';
-include_once '../config/jwt.php';
-include_once '../models/User.php';
+include_once '../../config/database.php';
+include_once '../../config/jwt.php';
+include_once '../../models/User.php';
 
 // Función para enviar respuesta JSON
 function sendResponse($status_code, $message = null, $data = null) {
