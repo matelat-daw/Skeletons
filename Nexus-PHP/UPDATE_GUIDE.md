@@ -101,6 +101,55 @@ npm audit
 npm cache clean --force
 ```
 
+## 🚨 **Solución para error "JavaScript heap out of memory":**
+
+### **Error común:**
+```
+FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
+```
+
+### **Soluciones:**
+
+#### **Solución temporal (por sesión):**
+```bash
+# PowerShell
+$env:NODE_OPTIONS="--max-old-space-size=8192"
+
+# CMD
+set NODE_OPTIONS=--max-old-space-size=8192
+
+# Verificar
+echo $env:NODE_OPTIONS
+```
+
+#### **Solución permanente:**
+```bash
+# Agregar a variables de entorno del sistema
+NODE_OPTIONS=--max-old-space-size=8192
+```
+
+#### **Comandos de limpieza:**
+```bash
+# Limpiar cache de npm
+npm cache clean --force
+
+# Limpiar node_modules y reinstalar
+rmdir /s node_modules
+npm install
+```
+
+#### **Script automatizado:**
+```bash
+# Ejecutar el script fix-memory-issue.bat
+./fix-memory-issue.bat
+```
+
+## 💡 **Explicación del problema:**
+- **Angular** y **npm** pueden usar mucha memoria durante compilaciones
+- **Node.js** por defecto limita la memoria a ~1.7GB
+- **Proyectos grandes** requieren más memoria para las operaciones
+- **La solución** aumenta el límite a 8GB
+
 ## 📝 **Estado actual del proyecto:**
 
 - **Angular**: v19.2.14/19.2.15 (Estable)
