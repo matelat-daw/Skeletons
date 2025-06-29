@@ -6,7 +6,7 @@ import { User } from '../../models/user';
 })
 export class UsersService {
 
-  private readonly API_URL = 'http://localhost:8080/api/Account'
+  private readonly API_URL = 'http://localhost:8080/Skeletons/PHP-API-NEXUS/api/Account'
 
   token = signal<string | null>(sessionStorage.getItem('auth_token'));
 

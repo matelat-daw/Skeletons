@@ -13,6 +13,14 @@ class User {
     public $created_at;
     public $is_verified;
 
+    // Propiedades adicionales para el perfil
+    public $phone_number;
+    public $profile_image;
+    public $birthday;
+    public $about;
+    public $user_location;
+    public $public_profile;
+
     public function __construct($db) {
         $this->conn = $db;
     }
@@ -144,6 +152,59 @@ class User {
                   $subKey;
 
         return base64_encode($buffer);
+    }
+
+    // Buscar usuario por email para perfil completo
+    public function findProfileByEmail($email) {
+        // Consulta básica que siempre debe funcionar
+        $baseQuery = "SELECT Id, UserName, Email, PasswordHash, EmailConfirmed FROM " . $this->table_name . " WHERE Email = :email";
+        
+        $stmt = $this->conn->prepare($baseQuery);
+        $stmt->bindParam(":email", $email);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if($row) {
+            $this->id = $row['Id'];
+            $this->nick = $row['UserName'];
+            $this->email = $row['Email'];
+            $this->password = $row['PasswordHash'];
+            $this->name = $row['UserName']; // ASP.NET usa UserName como nombre
+            $this->surname1 = ''; // ASP.NET no tiene apellido por defecto
+            $this->is_verified = $row['EmailConfirmed'];
+            
+            // Intentar obtener campos adicionales del perfil si existen
+            try {
+                $extendedQuery = "SELECT PhoneNumber, ProfileImage, Birthday, About, UserLocation, PublicProfile 
+                                 FROM " . $this->table_name . " WHERE Id = :userId";
+                $extendedStmt = $this->conn->prepare($extendedQuery);
+                $extendedStmt->bindParam(":userId", $this->id);
+                $extendedStmt->execute();
+                
+                $extendedRow = $extendedStmt->fetch(PDO::FETCH_ASSOC);
+                if ($extendedRow) {
+                    $this->phone_number = $extendedRow['PhoneNumber'] ?? '';
+                    $this->profile_image = $extendedRow['ProfileImage'] ?? '';
+                    $this->birthday = $extendedRow['Birthday'] ?? '';
+                    $this->about = $extendedRow['About'] ?? '';
+                    $this->user_location = $extendedRow['UserLocation'] ?? '';
+                    $this->public_profile = $extendedRow['PublicProfile'] ?? true;
+                }
+            } catch (Exception $e) {
+                // Campos adicionales no existen, usar valores por defecto
+                $this->phone_number = '';
+                $this->profile_image = '';
+                $this->birthday = '';
+                $this->about = '';
+                $this->user_location = '';
+                $this->public_profile = true;
+            }
+            
+            return true;
+        }
+
+        return false;
     }
 }
 ?>
