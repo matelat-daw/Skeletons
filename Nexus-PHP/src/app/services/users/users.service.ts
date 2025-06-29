@@ -36,20 +36,26 @@ export class UsersService {
       credentials: 'include'
     });
     if (!data.ok) throw new Error(`Error fetching user profile: ${data.status}`);
-    return data.json();
+    
+    const response = await data.json();
+    
+    // La API devuelve {message: "...", data: {...}}, necesitamos solo los datos
+    if (response.data) {
+      return response.data;
+    }
+    
+    // Si no hay estructura data, asumir que es el objeto directo (para compatibilidad)
+    return response;
   }
 
   async addComment(comment: string, constellationId: number): Promise<boolean> {
     try {
-      const user = await this.getMyProfile();
-      
       const commentData = {
-        userNick: user.nick,
         comment: comment,
         constellationId: constellationId,
       };
       
-      const data = await fetch('http://localhost:8080/api/Account', {
+      const data = await fetch(`${this.API_URL}/Comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -57,9 +63,10 @@ export class UsersService {
         body: JSON.stringify(commentData),
         credentials: 'include'
       });
-      if (!data.ok) throw new Error(`Error fetching user comments: ${data.status}`);
-      const response = await data.text();
-      return response === 'true';
+      
+      if (!data.ok) throw new Error(`Error adding comment: ${data.status}`);
+      const response = await data.json();
+      return response.success === true;
     } catch (error: any) {
       console.error('Error al añadir comentario:', error);
       throw error;
@@ -68,19 +75,19 @@ export class UsersService {
 
   async deleteComment(id: number): Promise<boolean> {
     try{
-      const data = await fetch(`http://localhost:8080/api/Comments/${id}`, {
+      const data = await fetch(`${this.API_URL}/Comments/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       });
       
       if (!data.ok) {
         const errorText = await data.text();
-        throw new Error(`Error actualizando perfil: ${errorText}`);
+        throw new Error(`Error deleting comment: ${errorText}`);
       }
-      const responseText = await data.text();
-      return responseText === "Datos Actualizados.";
+      const response = await data.json();
+      return response.success === true;
     } catch (error: any) {
-      console.error('Error en la actualización del perfil:', error);
+      console.error('Error eliminando comentario:', error);
       throw error;
     }
   }
@@ -90,9 +97,9 @@ export class UsersService {
       method: 'POST',
       credentials: 'include'
     });
-    if (!data.ok) throw new Error(`Error fetching user comments: ${data.status}`);
-    const response = await data.text();
-    return response === 'true';
+    if (!data.ok) throw new Error(`Error adding favorite: ${data.status}`);
+    const response = await data.json();
+    return response.success === true;
   }
 
   async deleteFavorite(id: number): Promise<boolean> {
@@ -100,9 +107,9 @@ export class UsersService {
       method: 'DELETE',
       credentials: 'include'
     });
-    if (!data.ok) throw new Error(`Error fetching user comments: ${data.status}`);
-    const response = await data.text();
-    return response === 'true';
+    if (!data.ok) throw new Error(`Error deleting favorite: ${data.status}`);
+    const response = await data.json();
+    return response.success === true;
   }
 
   async isMyFavorite(id: number): Promise<boolean> {
@@ -110,9 +117,9 @@ export class UsersService {
       method: 'GET',
       credentials: 'include'
     });
-    if (!data.ok) throw new Error(`Error fetching user favorite: ${data.status}`);
-    const response = await data.text();
-    return response === 'true';
+    if (!data.ok) throw new Error(`Error checking favorite: ${data.status}`);
+    const response = await data.json();
+    return response.success === true && response.data?.isFavorite === true;
   }
 
   async editProfile(profile: User): Promise<boolean> {
@@ -125,7 +132,7 @@ export class UsersService {
     formData.append('Email', profile.email);
     formData.append('Surname1', profile.surname1);
     if (profile.surname2) formData.append('Surname2', profile.surname2);
-    if (profile.phoneNumber) formData.append('PhoneNumber', profile.phoneNumber.toString());
+    if (profile.phoneNumber) formData.append('PhoneNumber', profile.phoneNumber);  // Ya es string
     if (profile.userLocation) formData.append('UserLocation', profile.userLocation);
     if (profile.about) formData.append('About', profile.about);
     if (profile.bday) formData.append('Bday', new Date(profile.bday).toLocaleDateString());

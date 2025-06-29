@@ -1,4 +1,13 @@
 <?php
+// Configuración estricta para API JSON
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
+// Limpiar cualquier salida previa
+if (ob_get_level()) {
+    ob_clean();
+}
+
 // Configuración de CORS robusta para desarrollo
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $allowedOrigins = [

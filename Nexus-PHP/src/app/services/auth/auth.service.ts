@@ -69,7 +69,7 @@ export class AuthService {
     if (errors.length > 0) this.handleErrors(errors);
     
     try {
-      console.log('Intentando login con:', { email, url: `${this.API_URL}/Login` });
+      console.log('Intentando login con:', { email, url: `${this.API_URL}Auth/Login` });
       
       const response = await fetch(`${this.API_URL}Auth/Login`, {
         method: 'POST',

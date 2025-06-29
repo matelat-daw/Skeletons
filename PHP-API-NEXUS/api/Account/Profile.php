@@ -1,4 +1,13 @@
 <?php
+// Configuración estricta para API JSON
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
+// Limpiar cualquier salida previa
+if (ob_get_level()) {
+    ob_clean();
+}
+
 // Configuración de CORS robusta para desarrollo
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $allowedOrigins = [
@@ -48,6 +57,8 @@ include_once '../../config/database.php';
 include_once '../../config/database_manager.php';
 include_once '../../config/jwt.php';
 include_once '../../models/User.php';
+include_once '../../models/Favorites.php';
+include_once '../../models/Comments.php';
 
 // Función para enviar respuesta JSON
 function sendResponse($status_code, $message = null, $data = null) {
@@ -103,62 +114,61 @@ try {
             sendResponse(404, "ERROR: Ese Usuario no Existe.");
         }
         
-        // Obtener favoritos del usuario (si existe la tabla)
+        // Obtener favoritos del usuario usando el modelo Favorites
         $favorites = [];
         try {
-            $favoritesQuery = "SELECT f.ConstellationId, c.name as ConstellationName 
-                              FROM Favorites f 
-                              INNER JOIN constellations c ON f.ConstellationId = c.id 
-                              WHERE f.UserId = :userId";
-            $favoritesStmt = $dbNexusUsers->prepare($favoritesQuery);
-            $favoritesStmt->bindParam(":userId", $userId);
-            $favoritesStmt->execute();
-            $favoriteIds = $favoritesStmt->fetchAll(PDO::FETCH_ASSOC);
+            $favoritesModel = new Favorites($dbNexusUsers);
+            $userFavorites = $favoritesModel->getUserFavorites($userId);
             
-            // Obtener datos completos de las constelaciones desde nexus_stars
-            if (!empty($favoriteIds)) {
-                $constellationIds = array_column($favoriteIds, 'ConstellationId');
-                $placeholders = str_repeat('?,', count($constellationIds) - 1) . '?';
-                $constellationsQuery = "SELECT id, name FROM constellations WHERE id IN ({$placeholders})";
-                $constellationsStmt = $dbNexusStars->prepare($constellationsQuery);
-                $constellationsStmt->execute($constellationIds);
-                $favorites = $constellationsStmt->fetchAll(PDO::FETCH_ASSOC);
+            // Transformar a formato esperado por el frontend
+            foreach ($userFavorites as $fav) {
+                $favorites[] = [
+                    'id' => $fav['ConstellationId'],
+                    'name' => $fav['ConstellationName'] ?? '',
+                    'english_name' => $fav['ConstellationName'] ?? ''
+                ];
             }
         } catch (Exception $e) {
-            // Las tablas Favorites o constellations no existen, continuar sin favoritos
+            // Error obteniendo favoritos, continuar sin favoritos
             error_log("Error obteniendo favoritos: " . $e->getMessage());
         }
         
-        // Obtener comentarios del usuario (si existe la tabla)
+        // Obtener comentarios del usuario usando el modelo Comments
         $comments = [];
         try {
-            $commentsQuery = "SELECT Id, UserNick, ConstellationName, Comment, UserId, ConstellationId 
-                             FROM Comments 
-                             WHERE UserId = :userId";
-            $commentsStmt = $dbNexusUsers->prepare($commentsQuery);
-            $commentsStmt->bindParam(":userId", $userId);
-            $commentsStmt->execute();
-            $comments = $commentsStmt->fetchAll(PDO::FETCH_ASSOC);
+            $commentsModel = new Comments($dbNexusUsers);
+            $userComments = $commentsModel->getUserComments($userId);
+            
+            // Transformar a formato esperado por el frontend
+            foreach ($userComments as $comment) {
+                $comments[] = [
+                    'id' => intval($comment['Id']),
+                    'userNick' => $comment['UserNick'],
+                    'comment' => $comment['Comment'],
+                    'constellationId' => intval($comment['ConstellationId']),
+                    'constellationName' => $comment['ConstellationName']
+                ];
+            }
         } catch (Exception $e) {
-            // La tabla Comments no existe, continuar sin comentarios
+            // Error obteniendo comentarios, continuar sin comentarios
             error_log("Error obteniendo comentarios: " . $e->getMessage());
         }
         
-        // Preparar respuesta con información del perfil
+        // Preparar respuesta con información del perfil (nombres en camelCase para frontend)
         $profileData = [
-            'Nick' => $user->nick,
-            'Name' => $user->name ?? '',
-            'Surname1' => $user->surname1 ?? '',
-            'Surname2' => '', // ASP.NET Identity no tiene surname2 por defecto
-            'Email' => $user->email,
-            'PhoneNumber' => $user->phone_number ?? '',
-            'ProfileImage' => $user->profile_image ?? '',
-            'Bday' => $user->birthday ?? '',
-            'About' => $user->about ?? '',
-            'UserLocation' => $user->user_location ?? '',
-            'PublicProfile' => $user->public_profile ?? true,
-            'Favorites' => $favorites,
-            'Comments' => $comments
+            'nick' => $user->nick ?? '',
+            'name' => $user->name ?? '',
+            'surname1' => $user->surname1 ?? '',
+            'surname2' => $user->surname2 ?? '',
+            'email' => $user->email ?? '',
+            'phoneNumber' => !empty($user->phone_number) ? $user->phone_number : '',
+            'profileImage' => $user->profile_image ?? '',
+            'bday' => $user->birthday ?? '',
+            'about' => $user->about ?? '',
+            'userLocation' => $user->user_location ?? '',
+            'publicProfile' => (bool)($user->public_profile ?? true),  // Convertir a boolean
+            'favorites' => $favorites,
+            'comments' => $comments
         ];
         
         // Respuesta exitosa

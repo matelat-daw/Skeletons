@@ -10,6 +10,7 @@ class User {
     public $password;
     public $name;
     public $surname1;
+    public $surname2;  // Agregar esta propiedad
     public $created_at;
     public $is_verified;
 
@@ -39,11 +40,12 @@ class User {
 
         if($row) {
             $this->id = $row['Id'];
-            $this->nick = $row['UserName'];
+            $this->nick = $row['Nick'];
             $this->email = $row['Email'];
             $this->password = $row['PasswordHash'];
-            $this->name = $row['UserName']; // ASP.NET usa UserName como nombre
-            $this->surname1 = ''; // ASP.NET no tiene apellido por defecto
+            $this->name = $row['Name']; // ASP.NET usa UserName como nombre
+            $this->surname1 = $row['Surname1'];
+            $this->surname1 = $row['Surname2'];
             $this->created_at = ''; // Si necesitas este campo, agrégalo a la consulta
             $this->is_verified = $row['EmailConfirmed'];
             return true;
@@ -73,20 +75,11 @@ class User {
                 return false;
             }
             
-            // Formato basado en el código Java:
-            // Byte 0: 0x01 (formato)
-            // Bytes 1-4: PRF (2 = HMACSHA512)
-            // Bytes 5-8: Iteraciones
-            // Bytes 9-12: Salt length
-            // Bytes 13-28: Salt (16 bytes)
-            // Bytes 29-60: Subkey (32 bytes)
-            
             $format = ord($hashBytes[0]);
             if ($format !== 0x01) {
                 return false; // Solo soportamos formato 0x01
             }
             
-            // Extraer valores (big-endian como en Java)
             $prf = unpack('N', substr($hashBytes, 1, 4))[1];
             $iterations = unpack('N', substr($hashBytes, 5, 4))[1];
             $saltLen = unpack('N', substr($hashBytes, 9, 4))[1];
@@ -156,10 +149,14 @@ class User {
 
     // Buscar usuario por email para perfil completo
     public function findProfileByEmail($email) {
-        // Consulta básica que siempre debe funcionar
-        $baseQuery = "SELECT Id, UserName, Email, PasswordHash, EmailConfirmed FROM " . $this->table_name . " WHERE Email = :email";
+        // Consulta única que incluye todos los campos existentes en la tabla
+        $query = "SELECT Id, UserName, Email, PasswordHash, EmailConfirmed, 
+                         Nick, Name, Surname1, Surname2, PhoneNumber, 
+                         ProfileImage, Bday, About, UserLocation, PublicProfile 
+                  FROM " . $this->table_name . " 
+                  WHERE Email = :email";
         
-        $stmt = $this->conn->prepare($baseQuery);
+        $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":email", $email);
         $stmt->execute();
 
@@ -167,39 +164,21 @@ class User {
 
         if($row) {
             $this->id = $row['Id'];
-            $this->nick = $row['UserName'];
+            $this->nick = $row['Nick'] ?? $row['UserName']; // Usar Nick si existe, sino UserName
             $this->email = $row['Email'];
             $this->password = $row['PasswordHash'];
-            $this->name = $row['UserName']; // ASP.NET usa UserName como nombre
-            $this->surname1 = ''; // ASP.NET no tiene apellido por defecto
             $this->is_verified = $row['EmailConfirmed'];
             
-            // Intentar obtener campos adicionales del perfil si existen
-            try {
-                $extendedQuery = "SELECT PhoneNumber, ProfileImage, Birthday, About, UserLocation, PublicProfile 
-                                 FROM " . $this->table_name . " WHERE Id = :userId";
-                $extendedStmt = $this->conn->prepare($extendedQuery);
-                $extendedStmt->bindParam(":userId", $this->id);
-                $extendedStmt->execute();
-                
-                $extendedRow = $extendedStmt->fetch(PDO::FETCH_ASSOC);
-                if ($extendedRow) {
-                    $this->phone_number = $extendedRow['PhoneNumber'] ?? '';
-                    $this->profile_image = $extendedRow['ProfileImage'] ?? '';
-                    $this->birthday = $extendedRow['Birthday'] ?? '';
-                    $this->about = $extendedRow['About'] ?? '';
-                    $this->user_location = $extendedRow['UserLocation'] ?? '';
-                    $this->public_profile = $extendedRow['PublicProfile'] ?? true;
-                }
-            } catch (Exception $e) {
-                // Campos adicionales no existen, usar valores por defecto
-                $this->phone_number = '';
-                $this->profile_image = '';
-                $this->birthday = '';
-                $this->about = '';
-                $this->user_location = '';
-                $this->public_profile = true;
-            }
+            // Mapear todos los campos del perfil con los nombres correctos de la tabla
+            $this->name = $row['Name'] ?? '';
+            $this->surname1 = $row['Surname1'] ?? '';
+            $this->surname2 = $row['Surname2'] ?? '';
+            $this->phone_number = $row['PhoneNumber'] ?? '';
+            $this->profile_image = $row['ProfileImage'] ?? '';
+            $this->birthday = $row['Bday'] ?? '';  // Campo correcto: Bday, no Birthday
+            $this->about = $row['About'] ?? '';
+            $this->user_location = $row['UserLocation'] ?? '';
+            $this->public_profile = $row['PublicProfile'] ?? true;
             
             return true;
         }

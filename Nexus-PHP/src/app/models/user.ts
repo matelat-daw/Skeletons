@@ -7,7 +7,7 @@ export interface User {
     surname1: string,
     surname2: string,
     email: string,
-    phoneNumber: number,
+    phoneNumber: string,  // Cambiado de number a string para mejor manejo
     profileImage: string,
     bday: string,
     about: string,

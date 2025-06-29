@@ -1,5 +1,13 @@
 RewriteEngine On
 
+# Configuración PHP para APIs JSON limpias
+php_flag display_errors Off
+php_flag log_errors On
+php_value error_log /tmp/php_api_errors.log
+
+# Configuración de charset
+AddDefaultCharset UTF-8
+
 # CORS Headers - Configuración mejorada (DESHABILITADA TEMPORALMENTE)
 # <IfModule mod_headers.c>
 #     # Permitir origen específico en desarrollo
@@ -28,6 +36,17 @@ RewriteEngine On
 </IfModule>
 
 # Routing para la API
+# Ruta específica para favoritos con ID: api/Account/Favorites/123
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/([^/]+)/Favorites/([0-9]+)/?$ api/$1/Favorites.php/$2 [L,QSA]
+
+# Ruta específica para comentarios con ID: api/Account/Comments/123
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/([^/]+)/Comments/([0-9]+)/?$ api/$1/Comments.php/$2 [L,QSA]
+
+# Ruta general para endpoints de API: api/Account/Profile
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^api/([^/]+)/([^/]+)/?$ api/$1/$2.php [L,QSA]
@@ -36,3 +55,16 @@ RewriteRule ^api/([^/]+)/([^/]+)/?$ api/$1/$2.php [L,QSA]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [L,QSA]
+
+# Evitar que se muestren archivos .env y de configuración
+<Files ".env*">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "*.php">
+    <IfModule mod_php.c>
+        php_flag display_errors Off
+        php_flag log_errors On
+    </IfModule>
+</Files>
