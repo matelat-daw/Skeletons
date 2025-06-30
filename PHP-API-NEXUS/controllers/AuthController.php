@@ -19,7 +19,7 @@ class AuthController extends BaseController {
         require_once 'services/AuthService.php';
         require_once 'services/GoogleAuthService.php'; // Nuevo servicio de Google
         require_once 'services/EmailService.php';
-        $this->userRepository = new UserRepository($this->dbManager->getNexusUsersConnection());
+        $this->userRepository = new UserRepository($this->dbManager->getConnection('NexusUsers'));
         $this->authService = new AuthService();
         $this->googleAuthService = new GoogleAuthService(); // Inicializar servicio de Google
     }
@@ -35,6 +35,7 @@ class AuthController extends BaseController {
             
             if (!$input) {
                 $this->sendResponse(400, "Datos de entrada requeridos", null, false);
+                return;
             }
             
             // Crear y llenar el modelo Login
@@ -49,32 +50,37 @@ class AuthController extends BaseController {
                 $this->sendResponse(400, "Datos de login inválidos", [
                     'errors' => $errors
                 ], false);
+                return;
             }
             
             // Validar credenciales adicionales
             if (!AuthService::validateCredentials($loginModel->email, $loginModel->password)) {
                 $this->sendResponse(400, "Formato de credenciales inválido", null, false);
+                return;
             }
             
             // Buscar usuario por email
             $user = $this->userRepository->findByEmail($loginModel->email);
             if (!$user) {
                 $this->sendResponse(401, "Credenciales inválidas", null, false);
+                return;
             }
             
             // Verificar que el usuario puede hacer login
             $loginCheck = AuthService::canLogin($user);
             if (!$loginCheck['can_login']) {
                 $this->sendResponse(401, $loginCheck['reason'], null, false);
+                return;
             }
             
             // Verificar contraseña
-            if (!AuthService::verifyPassword($loginModel->password, $user->password_hash)) {
+            if (!AuthService::verifyPassword($loginModel->password, $user->passwordHash)) {
                 $this->sendResponse(401, "Credenciales inválidas", null, false);
+                return;
             }
             
             // Generar JWT con expiración apropiada
-            $expiration = $loginModel->remember_me ? (86400 * 30) : 86400; // 30 días vs 1 día
+            $expiration = $loginModel->rememberMe ? (86400 * 30) : 86400; // 30 días vs 1 día
             $jwtPayload = AuthService::generateJwtPayload($user, $expiration);
             $token = $this->jwt->generateTokenFromPayload($jwtPayload);
             
@@ -89,7 +95,7 @@ class AuthController extends BaseController {
                     'nick' => $user->nick,
                     'name' => $user->name
                 ],
-                'rememberMe' => $loginModel->remember_me
+                'rememberMe' => $loginModel->rememberMe
             ], true);
             
         } catch (Exception $e) {
@@ -149,13 +155,13 @@ class AuthController extends BaseController {
             
             // Convertir a modelo User para inserción
             $user = $registerModel->toUser();
-            $user->password_hash = $hashedPassword;
+            $user->passwordHash = $hashedPassword;
             
             // Crear usuario en la base de datos
             if ($this->userRepository->create($user)) {
                 
                 // Generar y enviar email de confirmación
-                $emailConfirmation = new EmailConfirmation($this->dbManager->getNexusUsersConnection());
+                $emailConfirmation = new EmailConfirmation($this->dbManager->getConnection('NexusUsers'));
                 $confirmationToken = $emailConfirmation->generateToken($user->id, $user->email);
                 
                 if ($emailConfirmation->saveToken()) {
@@ -227,7 +233,7 @@ class AuthController extends BaseController {
             }
             
             // Buscar y validar token
-            $emailConfirmation = new EmailConfirmation($this->dbManager->getNexusUsersConnection());
+            $emailConfirmation = new EmailConfirmation($this->dbManager->getConnection('NexusUsers'));
             
             if (!$emailConfirmation->findValidToken($token)) {
                 $this->sendResponse(400, "Token de confirmación inválido o expirado", null, false);
@@ -246,7 +252,7 @@ class AuthController extends BaseController {
             }
             
             // Si ya está confirmado
-            if ($user->email_confirmed) {
+            if ($user->emailConfirmed) {
                 $this->sendResponse(200, "Email ya confirmado previamente", [
                     'user' => [
                         'id' => $user->id,
@@ -259,7 +265,7 @@ class AuthController extends BaseController {
             }
             
             // Actualizar usuario como confirmado
-            $user->email_confirmed = true;
+            $user->emailConfirmed = true;
             
             if ($this->userRepository->update($user)) {
                 // Marcar token como usado
@@ -319,12 +325,12 @@ class AuthController extends BaseController {
             }
             
             // Si ya está confirmado
-            if ($user->email_confirmed) {
+            if ($user->emailConfirmed) {
                 $this->sendResponse(400, "El email ya está confirmado", null, false);
             }
             
             // Generar nuevo token
-            $emailConfirmation = new EmailConfirmation($this->dbManager->getNexusUsersConnection());
+            $emailConfirmation = new EmailConfirmation($this->dbManager->getConnection('NexusUsers'));
             $confirmationToken = $emailConfirmation->generateToken($user->id, $user->email);
             
             if ($emailConfirmation->saveToken()) {
@@ -394,8 +400,8 @@ class AuthController extends BaseController {
                 $user->nick = $googleData->name; // Usar nombre como nick por defecto
                 $user->name = $googleData->name;
                 $user->surname1 = ''; // Sin apellido por defecto
-                $user->password_hash = ''; // Sin contraseña
-                $user->email_confirmed = 1; // Confirmar email automáticamente
+                $user->passwordHash = ''; // Sin contraseña
+                $user->emailConfirmed = 1; // Confirmar email automáticamente
                 
                 // Crear usuario en la base de datos
                 $this->userRepository->create($user);
@@ -403,7 +409,7 @@ class AuthController extends BaseController {
                 // Actualizar datos del usuario si es necesario
                 $user->name = $googleData->name;
                 $user->surname1 = '';
-                $user->email_confirmed = 1; // Asegurarse de que el email esté confirmado
+                $user->emailConfirmed = 1; // Asegurarse de que el email esté confirmado
                 $this->userRepository->update($user);
             }
             
@@ -500,8 +506,8 @@ class AuthController extends BaseController {
                 }
                 
                 // Si el email no está confirmado y viene de Google, confirmarlo automáticamente
-                if (!$user->email_confirmed && $googleUserInfo['email_verified']) {
-                    $user->email_confirmed = true;
+                if (!$user->emailConfirmed && $googleUserInfo['email_verified']) {
+                    $user->emailConfirmed = true;
                     $this->userRepository->update($user);
                 }
                 
@@ -513,7 +519,7 @@ class AuthController extends BaseController {
                 $newUser->nick = $this->generateNickFromEmail($externalLoginModel->email);
                 $newUser->name = $googleUserInfo['given_name'] ?? '';
                 $newUser->surname1 = $googleUserInfo['family_name'] ?? '';
-                $newUser->email_confirmed = $googleUserInfo['email_verified'] ?? false;
+                $newUser->emailConfirmed = $googleUserInfo['email_verified'] ?? false;
                 $newUser->lockout_enabled = false;
                 $newUser->access_failed_count = 0;
                 $newUser->two_factor_enabled = false;
@@ -522,7 +528,7 @@ class AuthController extends BaseController {
                 $newUser->security_stamp = bin2hex(random_bytes(16));
                 
                 // No establecer contraseña para cuentas externas
-                $newUser->password_hash = '';
+                $newUser->passwordHash = '';
                 
                 // Crear usuario
                 if ($this->userRepository->create($newUser)) {
@@ -563,7 +569,7 @@ class AuthController extends BaseController {
                     'email' => $user->email,
                     'nick' => $user->nick,
                     'name' => $user->name,
-                    'emailConfirmed' => $user->email_confirmed
+                    'emailConfirmed' => $user->emailConfirmed
                 ],
                 'provider' => $externalLoginModel->provider,
                 'isNewUser' => !isset($loginExistente)

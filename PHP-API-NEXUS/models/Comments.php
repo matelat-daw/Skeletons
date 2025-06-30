@@ -225,6 +225,21 @@ class Comments {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Obtener todos los comentarios
+     * Compatible con ASP.NET: GetAllComments()
+     */
+    public function getAllComments() {
+        $query = "SELECT c.Id, c.UserNick, c.ConstellationName, c.Comment, 
+                        c.UserId, c.ConstellationId
+                  FROM " . $this->table_name . " c
+                  ORDER BY c.Id DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // ===============================
     // MÉTODOS DE VALIDACIÓN
     // Equivalentes a DataAnnotations de ASP.NET

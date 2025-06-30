@@ -88,6 +88,13 @@ class Login {
         }
     }
 
+    // Sanitizar específicamente el email (método esperado por AuthController)
+    public function sanitizeEmail() {
+        if (!empty($this->email)) {
+            $this->email = filter_var(trim(strtolower($this->email)), FILTER_SANITIZE_EMAIL);
+        }
+    }
+
     // Verificar si las credenciales están completas
     public function hasCredentials() {
         return !empty($this->email) && !empty($this->password);

@@ -133,8 +133,8 @@ class UserRepository {
         $stmt->bindParam(":id", $user->id);
         $stmt->bindParam(":username", $user->nick);
         $stmt->bindParam(":email", $user->email);
-        $stmt->bindParam(":password_hash", $user->password_hash);
-        $stmt->bindParam(":email_confirmed", $user->email_confirmed);
+        $stmt->bindParam(":password_hash", $user->passwordHash);
+        $stmt->bindParam(":email_confirmed", $user->emailConfirmed);
         $stmt->bindParam(":nick", $user->nick);
         $stmt->bindParam(":name", $user->name);
         $stmt->bindParam(":surname1", $user->surname1);
@@ -143,8 +143,8 @@ class UserRepository {
         $stmt->bindParam(":profile_image", $user->profile_image);
         $stmt->bindParam(":birthday", $birthday);
         $stmt->bindParam(":about", $user->about);
-        $stmt->bindParam(":user_location", $user->user_location);
-        $stmt->bindParam(":public_profile", $user->public_profile);
+        $stmt->bindParam(":user_location", $user->userLocation);
+        $stmt->bindParam(":public_profile", $user->publicProfile);
         $stmt->bindParam(":access_failed_count", $access_failed_count);
         $stmt->bindParam(":lockout_enabled", $lockout_enabled);
         $stmt->bindParam(":two_factor_enabled", $two_factor_enabled);
@@ -172,11 +172,11 @@ class UserRepository {
         $stmt->bindParam(":surname2", $user->surname2);
         $stmt->bindParam(":phone_number", $user->phone_number);
         $stmt->bindParam(":profile_image", $user->profile_image);
-        $stmt->bindParam(":birthday", $user->birthday);
+        $stmt->bindParam(":birthday", $user->bday);
         $stmt->bindParam(":about", $user->about);
-        $stmt->bindParam(":user_location", $user->user_location);
-        $stmt->bindParam(":public_profile", $user->public_profile);
-        $stmt->bindParam(":email_confirmed", $user->email_confirmed);
+        $stmt->bindParam(":user_location", $user->userLocation);
+        $stmt->bindParam(":public_profile", $user->publicProfile);
+        $stmt->bindParam(":email_confirmed", $user->emailConfirmed);
 
         return $stmt->execute();
     }

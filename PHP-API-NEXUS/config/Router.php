@@ -25,6 +25,7 @@ class Router {
         // Rutas de Autenticación
         $this->addRoute('POST', '/api/Auth/Login', 'AuthController', 'login');
         $this->addRoute('POST', '/api/Auth/Register', 'AuthController', 'register');
+        $this->addRoute('POST', '/api/Auth/ExternalLogin', 'AuthController', 'externalLogin'); // Ruta para login con Google
         $this->addRoute('GET', '/api/Auth/ConfirmEmail', 'AuthController', 'confirmEmail');
         $this->addRoute('POST', '/api/Auth/ResendConfirmation', 'AuthController', 'resendConfirmation');
         
@@ -50,13 +51,18 @@ class Router {
         $this->addRoute('POST', '/api/Account/Favorites/{id}', 'FavoritesController', 'addFavorite');
         $this->addRoute('DELETE', '/api/Account/Favorites/{id}', 'FavoritesController', 'removeFavorite');
         
-        // Rutas de Comentarios
-        $this->addRoute('GET', '/api/Account/Comments', 'CommentsController', 'getUserComments');
-        $this->addRoute('GET', '/api/Account/Comments/{id}', 'CommentsController', 'getComment');
+        
+        // Rutas de Comentarios (exactamente como en ASP.NET Core)
+        $this->addRoute('GET', '/api/Comments', 'CommentsController', 'getAllComments');
+        $this->addRoute('GET', '/api/Comments/ById/{id}', 'CommentsController', 'getCommentById');
+        $this->addRoute('GET', '/api/Comments/User/{userId}', 'CommentsController', 'getCommentsByUser');
+        $this->addRoute('PUT', '/api/Comments/{id}', 'CommentsController', 'putComment');
+        $this->addRoute('POST', '/api/Comments', 'CommentsController', 'postComment');
+        $this->addRoute('DELETE', '/api/Comments/{id}', 'CommentsController', 'deleteComment');
+        
+        // Rutas de Comentarios adicionales (mantenidas para compatibilidad)
+        $this->addRoute('GET', '/api/Account/Comments', 'CommentsController', 'getCommentsByUser');
         $this->addRoute('GET', '/api/Account/GetComments/{id}', 'CommentsController', 'getCommentsByConstellation');
-        $this->addRoute('POST', '/api/Account/Comments', 'CommentsController', 'addComment');
-        $this->addRoute('PUT', '/api/Account/Comments/{id}', 'CommentsController', 'updateComment');
-        $this->addRoute('DELETE', '/api/Account/Comments/{id}', 'CommentsController', 'deleteComment');
     }
 
     /**

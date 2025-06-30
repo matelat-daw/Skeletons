@@ -6,7 +6,7 @@
 
 // Configuración de errores y charset
 error_reporting(E_ALL);
-ini_set('display_errors', 0); // Desactivado en producción
+ini_set('display_errors', 0); // Desactivado para producción
 header('Content-Type: application/json; charset=UTF-8');
 
 // Configuración CORS
@@ -44,11 +44,30 @@ try {
     $router = new Router();
     $router->handleRequest();
 } catch (Exception $e) {
+    // Log del error
+    error_log("Error en index.php: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    
     http_response_code(500);
     echo json_encode([
         'message' => 'Error interno del servidor',
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine()
+    ]);
+} catch (Error $e) {
+    // Capturar errores fatales también
+    error_log("Error fatal en index.php: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    
+    http_response_code(500);
+    echo json_encode([
+        'message' => 'Error fatal del servidor',
+        'success' => false,
+        'error' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine()
     ]);
 }
 ?>

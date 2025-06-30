@@ -115,5 +115,10 @@ class JWTHandler {
             unset($_COOKIE[$name]);
         }
     }
+    
+    public function clearTokenCookie($name = 'auth_token') {
+        // Alias para clearCookie para compatibilidad
+        return $this->clearCookie($name);
+    }
 }
 ?>

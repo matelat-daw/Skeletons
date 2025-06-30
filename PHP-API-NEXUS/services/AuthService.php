@@ -105,7 +105,7 @@ class AuthService {
             'email' => $user->email,
             'nick' => $user->nick,
             'username' => $user->nick,
-            'email_confirmed' => $user->email_confirmed,
+            'emailConfirmed' => $user->emailConfirmed,
             'iat' => time(),
             'exp' => time() + $expiration
         ];
@@ -114,7 +114,7 @@ class AuthService {
     // Validar que el usuario puede hacer login
     public static function canLogin(User $user) {
         // Verificar que el email esté confirmado
-        if (!$user->email_confirmed) {
+        if (!$user->emailConfirmed) {
             return [
                 'can_login' => false,
                 'reason' => 'Email no confirmado'
@@ -122,7 +122,7 @@ class AuthService {
         }
 
         // Verificar que tenga hash de contraseña
-        if (empty($user->password_hash)) {
+        if (empty($user->passwordHash)) {
             return [
                 'can_login' => false,
                 'reason' => 'Usuario sin contraseña configurada'
