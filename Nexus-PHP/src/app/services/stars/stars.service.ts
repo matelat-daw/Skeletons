@@ -6,7 +6,7 @@ import { Star } from '../../models/star';
 })
 export class StarsService {
 
-  private readonly API_URL = 'http://localhost:8080/api/Stars'
+  private readonly API_URL = 'http://localhost:8080/Skeletons/PHP-API-NEXUS/api/Stars'
 
   constructor() { }
 

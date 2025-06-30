@@ -41,21 +41,7 @@ class Constellation {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if($row) {
-            $this->id = $row['id'];
-            $this->code = $row['code'];
-            $this->latin_name = $row['latin_name'];
-            $this->english_name = $row['english_name'];
-            $this->spanish_name = $row['spanish_name'];
-            $this->mythology = $row['mythology'];
-            $this->area_degrees = $row['area_degrees'];
-            $this->declination = $row['declination'];
-            $this->celestial_zone = $row['celestial_zone'];
-            $this->ecliptic_zone = $row['ecliptic_zone'];
-            $this->brightest_star = $row['brightest_star'];
-            $this->discovery = $row['discovery'];
-            $this->image_name = $row['image_name'];
-            $this->image_url = $row['image_url'];
-            return true;
+            return $row; // Devolver directamente el array
         }
         
         return false;
@@ -114,6 +100,22 @@ class Constellation {
         $stmt->bindParam(":constellation_id", $constellationId);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Obtener estrellas de una constelación por ID (alias para compatibilidad)
+    public function getStarsByConstellationId($constellationId) {
+        // Primero verificar si la constelación existe
+        $checkQuery = "SELECT id FROM " . $this->table_name . " WHERE id = :id";
+        $checkStmt = $this->conn->prepare($checkQuery);
+        $checkStmt->bindParam(":id", $constellationId);
+        $checkStmt->execute();
+        
+        if (!$checkStmt->fetch()) {
+            return false; // La constelación no existe
+        }
+        
+        // Si existe, obtener las estrellas
+        return $this->getStars($constellationId);
     }
 
     // Buscar constelaciones por nombre (en cualquier idioma)

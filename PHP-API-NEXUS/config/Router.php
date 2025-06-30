@@ -28,6 +28,16 @@ class Router {
         $this->addRoute('GET', '/api/Auth/ConfirmEmail', 'AuthController', 'confirmEmail');
         $this->addRoute('POST', '/api/Auth/ResendConfirmation', 'AuthController', 'resendConfirmation');
         
+        // Rutas de Constelaciones (las más específicas primero)
+        $this->addRoute('GET', '/api/Constellations/GetStars/{id}', 'ConstellationsController', 'getStars');
+        $this->addRoute('GET', '/api/Constellations/ConstelationLines', 'ConstellationsController', 'getConstellationLines');
+        $this->addRoute('GET', '/api/Constellations/{id}', 'ConstellationsController', 'getById');
+        $this->addRoute('GET', '/api/Constellations', 'ConstellationsController', 'getAll');
+        
+        // Rutas de Estrellas (las más específicas primero)
+        $this->addRoute('GET', '/api/Stars/{id}', 'StarsController', 'getById');
+        $this->addRoute('GET', '/api/Stars', 'StarsController', 'getAll');
+        
         // Rutas de Cuenta/Perfil
         $this->addRoute('GET', '/api/Account/Profile', 'AccountController', 'getProfile');
         $this->addRoute('POST', '/api/Account/Logout', 'AccountController', 'logout');
@@ -43,6 +53,7 @@ class Router {
         // Rutas de Comentarios
         $this->addRoute('GET', '/api/Account/Comments', 'CommentsController', 'getUserComments');
         $this->addRoute('GET', '/api/Account/Comments/{id}', 'CommentsController', 'getComment');
+        $this->addRoute('GET', '/api/Account/GetComments/{id}', 'CommentsController', 'getCommentsByConstellation');
         $this->addRoute('POST', '/api/Account/Comments', 'CommentsController', 'addComment');
         $this->addRoute('PUT', '/api/Account/Comments/{id}', 'CommentsController', 'updateComment');
         $this->addRoute('DELETE', '/api/Account/Comments/{id}', 'CommentsController', 'deleteComment');
@@ -66,18 +77,24 @@ class Router {
      */
     private function pathToRegex($path) {
         // Escapar caracteres especiales de regex excepto {}
-        $pattern = preg_quote($path, '/');
+        $pattern = preg_quote($path, '#');  // Usar # como delimitador en lugar de /
         
         // Convertir {id} a grupos de captura
         $pattern = preg_replace('/\\\{([^}]+)\\\}/', '([^/]+)', $pattern);
         
-        return '/^' . $pattern . '$/';
+        return '#^' . $pattern . '$#';  // Usar # como delimitador
     }
 
     /**
      * Obtiene la ruta actual de la request
      */
     private function getCurrentPath() {
+        // Primero verificar si hay un parámetro 'request' en la query string
+        if (isset($_GET['request'])) {
+            return '/' . ltrim($_GET['request'], '/');
+        }
+        
+        // Si no, usar REQUEST_URI (para casos de URLs limpias)
         $requestUri = $_SERVER['REQUEST_URI'];
         
         // Remover query string

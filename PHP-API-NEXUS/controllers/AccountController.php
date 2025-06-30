@@ -15,9 +15,10 @@ class AccountController extends BaseController {
         require_once 'models/Favorites.php';
         require_once 'models/Comments.php';
         
-        $this->userRepository = new UserRepository($this->dbManager->getNexusUsersConnection());
-        $this->favorites = new Favorites($this->dbManager->getNexusUsersConnection());
-        $this->comments = new Comments($this->dbManager->getNexusUsersConnection());
+        // Usar la base de datos NexusUsers para todas las operaciones de cuenta
+        $this->userRepository = new UserRepository($this->dbManager->getConnection('NexusUsers'));
+        $this->favorites = new Favorites($this->dbManager->getConnection('NexusUsers'));
+        $this->comments = new Comments($this->dbManager->getConnection('NexusUsers'));
     }
     
     /**

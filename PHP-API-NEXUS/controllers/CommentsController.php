@@ -13,8 +13,9 @@ class CommentsController extends BaseController {
         require_once 'models/Comments.php';
         require_once 'models/Constellation.php';
         
-        $this->comments = new Comments($this->dbManager->getNexusUsersConnection());
-        $this->constellation = new Constellation($this->dbManager->getNexusStarsConnection());
+        // Usar la base de datos NexusUsers para comentarios y nexus_stars para constelaciones
+        $this->comments = new Comments($this->dbManager->getConnection('NexusUsers'));
+        $this->constellation = new Constellation($this->dbManager->getConnection('nexus_stars'));
     }
     
     /**
@@ -34,11 +35,11 @@ class CommentsController extends BaseController {
             $formattedComments = array_map(function($comment) {
                 return [
                     "id" => intval($comment['Id']),
-                    "userId" => $comment['UserId'],
                     "userNick" => $comment['UserNick'],
+                    "constellationName" => $comment['ConstellationName'],
                     "comment" => $comment['Comment'],
-                    "constellationId" => intval($comment['ConstellationId']),
-                    "constellationName" => $comment['ConstellationName']
+                    "userId" => $comment['UserId'],
+                    "constellationId" => intval($comment['ConstellationId'])
                 ];
             }, $userComments);
             
@@ -76,11 +77,11 @@ class CommentsController extends BaseController {
                 
                 $commentData = [
                     "id" => intval($this->comments->id),
-                    "userId" => $this->comments->user_id,
                     "userNick" => $this->comments->user_nick,
+                    "constellationName" => $this->comments->constellation_name,
                     "comment" => $this->comments->comment,
-                    "constellationId" => intval($this->comments->constellation_id),
-                    "constellationName" => $this->comments->constellation_name
+                    "userId" => $this->comments->user_id,
+                    "constellationId" => intval($this->comments->constellation_id)
                 ];
                 
                 $this->sendResponse(200, "Comentario obtenido correctamente", $commentData, true);
@@ -135,11 +136,11 @@ class CommentsController extends BaseController {
             if ($this->comments->addComment($userId, $userNick, $commentText, $constellationId, $constellationName)) {
                 $responseData = [
                     "id" => intval($this->comments->id),
-                    "userId" => $this->comments->user_id,
                     "userNick" => $this->comments->user_nick,
+                    "constellationName" => $this->comments->constellation_name,
                     "comment" => $this->comments->comment,
-                    "constellationId" => intval($this->comments->constellation_id),
-                    "constellationName" => $this->comments->constellation_name
+                    "userId" => $this->comments->user_id,
+                    "constellationId" => intval($this->comments->constellation_id)
                 ];
                 
                 $this->sendResponse(200, "Comentario agregado correctamente", $responseData, true);
@@ -236,6 +237,43 @@ class CommentsController extends BaseController {
             
         } catch (Exception $e) {
             error_log("Error en deleteComment: " . $e->getMessage());
+            $this->sendResponse(500, "Error interno del servidor", null, false);
+        }
+    }
+
+    /**
+     * GET /api/Account/GetComments/{id}
+     * Obtiene todos los comentarios de una constelación específica
+     */
+    public function getCommentsByConstellation($params = []) {
+        try {
+            // Validar ID de constelación
+            if (!isset($params['id'])) {
+                $this->sendResponse(400, "ID de constelación requerido", null, false);
+                return;
+            }
+            
+            $constellationId = $this->validateId($params['id']);
+            
+            // Obtener comentarios de la constelación
+            $constellationComments = $this->comments->getByConstellationId($constellationId);
+            
+            // Formatear datos para el frontend
+            $formattedComments = array_map(function($comment) {
+                return [
+                    "id" => intval($comment['Id']),
+                    "userNick" => $comment['UserNick'],
+                    "constellationName" => $comment['ConstellationName'] ?? '',
+                    "comment" => $comment['Comment'],
+                    "userId" => $comment['UserId'],
+                    "constellationId" => intval($comment['ConstellationId'])
+                ];
+            }, $constellationComments);
+            
+            $this->sendResponse(200, "Comentarios de la constelación obtenidos correctamente", $formattedComments, true);
+            
+        } catch (Exception $e) {
+            error_log("Error en getCommentsByConstellation: " . $e->getMessage());
             $this->sendResponse(500, "Error interno del servidor", null, false);
         }
     }

@@ -13,8 +13,9 @@ class FavoritesController extends BaseController {
         require_once 'models/Favorites.php';
         require_once 'models/Constellation.php';
         
-        $this->favorites = new Favorites($this->dbManager->getNexusUsersConnection());
-        $this->constellation = new Constellation($this->dbManager->getNexusStarsConnection());
+        // Usar NexusUsers para favoritos y nexus_stars para constelaciones
+        $this->favorites = new Favorites($this->dbManager->getConnection('NexusUsers'));
+        $this->constellation = new Constellation($this->dbManager->getConnection('nexus_stars'));
     }
     
     /**

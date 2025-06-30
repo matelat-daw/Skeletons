@@ -4,10 +4,9 @@ require_once __DIR__ . '/env.php';
 
 class Database {
     private $server;
-    private $database;
     private $username;
     private $password;
-    private $conn;
+    private $connections = []; // Array para almacenar múltiples conexiones
 
     public function __construct() {
         // Obtener configuración desde variables de entorno
@@ -15,7 +14,6 @@ class Database {
         $port = $_ENV['SQLSERVER_PORT'] ?? '1433';
         
         $this->server = $host . ',' . $port;
-        $this->database = $_ENV['SQLSERVER_DATABASE'] ?? 'NexusUsers';
         $this->username = $_ENV['SQLSERVER_USER'] ?? 'sa';
         $this->password = $_ENV['SQLSERVER_PASSWORD'] ?? 'Anubis@68';
         
@@ -24,12 +22,31 @@ class Database {
         }
     }
 
-    public function getConnection() {
-        $this->conn = null;
+    public function getConnection($database = null) {
+        // Usar base de datos por defecto si no se especifica
+        if ($database === null) {
+            $database = $_ENV['SQLSERVER_DATABASE'] ?? 'NexusUsers';
+        }
+        
+        // Mapear nombres de bases de datos
+        $databaseMap = [
+            'NexusUsers' => 'NexusUsers',
+            'nexus_stars' => 'nexus_stars',
+            'Stars' => 'nexus_stars', // Alias para compatibilidad
+            'Constellations' => 'nexus_stars' // Alias para compatibilidad
+        ];
+        
+        // Usar el mapeo si existe, sino usar el nombre directamente
+        $dbName = $databaseMap[$database] ?? $database;
+        
+        // Si ya existe una conexión para esta base de datos, devolverla
+        if (isset($this->connections[$dbName])) {
+            return $this->connections[$dbName];
+        }
         
         try {
             // Configuración de PDO para SQL Server
-            $dsn = "sqlsrv:Server={$this->server};Database={$this->database};TrustServerCertificate=true;ConnectRetryCount=3;ConnectRetryInterval=10";
+            $dsn = "sqlsrv:Server={$this->server};Database={$dbName};TrustServerCertificate=true;ConnectRetryCount=3;ConnectRetryInterval=10";
             
             // Configurar opciones de PDO básicas para SQL Server
             $options = array(
@@ -42,7 +59,7 @@ class Database {
                 $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_UTF8;
             }
             
-            $this->conn = new PDO(
+            $this->connections[$dbName] = new PDO(
                 $dsn,
                 $this->username,
                 $this->password,
@@ -50,17 +67,17 @@ class Database {
             );
             
         } catch(PDOException $exception) {
-            error_log("Error de conexión a SQL Server: " . $exception->getMessage());
+            error_log("Error de conexión a SQL Server (DB: {$dbName}): " . $exception->getMessage());
             
             // En desarrollo, mostrar el error. En producción, usar un mensaje genérico
             if ($_ENV['ENVIRONMENT'] === 'development' || getenv('APP_ENV') === 'development') {
-                throw new Exception("Error de conexión: " . $exception->getMessage());
+                throw new Exception("Error de conexión a {$dbName}: " . $exception->getMessage());
             } else {
                 throw new Exception("Error de conexión a la base de datos. Por favor, inténtelo más tarde.");
             }
         }
 
-        return $this->conn;
+        return $this->connections[$dbName];
     }
 }
 ?>

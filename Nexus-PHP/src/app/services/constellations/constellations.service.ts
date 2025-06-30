@@ -9,7 +9,7 @@ import { Comments } from '../../models/comments';
 })
 export class ConstellationsService {
 
-  private readonly API_URL = 'http://localhost:8080/api/Constellations'
+  private readonly API_URL = 'http://localhost:8080/Skeletons/PHP-API-NEXUS/api/Constellations'
 
   constructor() { }
 
@@ -38,7 +38,7 @@ export class ConstellationsService {
   }
 
   async getCommentsById(id: number): Promise<Comments[]> {
-    const data = await fetch(`http://localhost:8080/api/Account/GetComments/${id}`);
+    const data = await fetch(`http://localhost:8080/Skeletons/PHP-API-NEXUS/api/Account/GetComments/${id}`);
     if (!data.ok) throw new Error(`Error fetching comments for constellation ${id}: ${data.status}`);
     return data.json();
   }

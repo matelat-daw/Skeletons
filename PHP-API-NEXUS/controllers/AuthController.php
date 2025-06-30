@@ -7,17 +7,21 @@ require_once 'BaseController.php';
 class AuthController extends BaseController {
     private $userRepository;
     private $authService;
+    private $googleAuthService;
     
     public function __construct() {
         parent::__construct();
         require_once 'models/UserRepository.php';
         require_once 'models/Login.php';
         require_once 'models/Register.php';
+        require_once 'models/ExternalLogin.php'; // Nuevo modelo para login externo
         require_once 'models/EmailConfirmation.php';
         require_once 'services/AuthService.php';
+        require_once 'services/GoogleAuthService.php'; // Nuevo servicio de Google
         require_once 'services/EmailService.php';
         $this->userRepository = new UserRepository($this->dbManager->getNexusUsersConnection());
         $this->authService = new AuthService();
+        $this->googleAuthService = new GoogleAuthService(); // Inicializar servicio de Google
     }
     
     /**
@@ -346,6 +350,255 @@ class AuthController extends BaseController {
             error_log("Error en resendConfirmation: " . $e->getMessage());
             $this->sendResponse(500, "Error interno del servidor", null, false);
         }
+    }
+
+    /**
+     * POST /api/Auth/GoogleLogin
+     * Autentica un usuario usando Google y establece cookie JWT
+     */
+    public function googleLogin($params = []) {
+        try {
+            // Obtener datos de entrada
+            $input = $this->getJsonInput();
+            
+            if (!$input) {
+                $this->sendResponse(400, "Datos de entrada requeridos", null, false);
+            }
+            
+            // Crear y llenar el modelo ExternalLogin
+            $externalLoginModel = new ExternalLogin($input);
+            
+            // Validar el modelo
+            if (!$externalLoginModel->isValid()) {
+                $errors = $externalLoginModel->getValidationErrors();
+                $this->sendResponse(400, "Datos de login inválidos", [
+                    'errors' => $errors
+                ], false);
+            }
+            
+            // Verificar token de Google
+            $googleData = $this->googleAuthService->verifyIdToken($externalLoginModel->id_token);
+            
+            if (!$googleData) {
+                $this->sendResponse(401, "Token de Google inválido", null, false);
+            }
+            
+            // Buscar o crear usuario
+            $user = $this->userRepository->findByEmail($googleData->email);
+            
+            if (!$user) {
+                // Crear nuevo usuario si no existe
+                $user = new stdClass();
+                $user->id = $this->userRepository->generateId();
+                $user->email = $googleData->email;
+                $user->nick = $googleData->name; // Usar nombre como nick por defecto
+                $user->name = $googleData->name;
+                $user->surname1 = ''; // Sin apellido por defecto
+                $user->password_hash = ''; // Sin contraseña
+                $user->email_confirmed = 1; // Confirmar email automáticamente
+                
+                // Crear usuario en la base de datos
+                $this->userRepository->create($user);
+            } else {
+                // Actualizar datos del usuario si es necesario
+                $user->name = $googleData->name;
+                $user->surname1 = '';
+                $user->email_confirmed = 1; // Asegurarse de que el email esté confirmado
+                $this->userRepository->update($user);
+            }
+            
+            // Generar JWT
+            $expiration = 86400; // 1 día
+            $jwtPayload = AuthService::generateJwtPayload($user, $expiration);
+            $token = $this->jwt->generateTokenFromPayload($jwtPayload);
+            
+            // Establecer cookie con la misma expiración
+            $this->jwt->setCookie($token, 'auth_token', $expiration);
+            
+            // Respuesta exitosa
+            $this->sendResponse(200, "Login con Google exitoso", [
+                'user' => [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                    'nick' => $user->nick,
+                    'name' => $user->name
+                ]
+            ], true);
+            
+        } catch (Exception $e) {
+            error_log("Error en googleLogin: " . $e->getMessage());
+            $this->sendResponse(500, "Error interno del servidor", null, false);
+        }
+    }
+
+    /**
+     * POST /api/Auth/ExternalLogin
+     * Autentica un usuario con login externo (Google)
+     * Compatible con ASP.NET Identity ExternalLogin
+     */
+    public function externalLogin($params = []) {
+        try {
+            // Obtener datos de entrada
+            $input = $this->getJsonInput();
+            
+            if (!$input) {
+                $this->sendResponse(400, "Datos de entrada requeridos", null, false);
+            }
+            
+            // Crear y validar el modelo ExternalLogin
+            $externalLoginModel = new ExternalLogin($input);
+            
+            if (!$externalLoginModel->isValid()) {
+                $errors = $externalLoginModel->getValidationErrors();
+                $this->sendResponse(400, "Datos de login externo inválidos", [
+                    'errors' => $errors
+                ], false);
+            }
+            
+            // Validar token de Google
+            $googleUserInfo = null;
+            if ($externalLoginModel->provider === 'Google') {
+                $googleUserInfo = $this->googleAuthService->validateToken($externalLoginModel->providerKey);
+                
+                if (!$googleUserInfo) {
+                    $this->sendResponse(401, "Token de Google inválido o expirado", null, false);
+                }
+                
+                // Verificar que el email coincida
+                if ($googleUserInfo['email'] !== $externalLoginModel->email) {
+                    $this->sendResponse(400, "El email del token no coincide con el proporcionado", null, false);
+                }
+            } else {
+                $this->sendResponse(400, "Proveedor de autenticación no soportado", null, false);
+            }
+            
+            // Buscar usuario existente por email
+            $user = $this->userRepository->findByEmail($externalLoginModel->email);
+            
+            if ($user) {
+                // Usuario existente - vincular cuenta externa si no está vinculada
+                $loginExistente = $this->userRepository->findExternalLogin($user->id, $externalLoginModel->provider);
+                
+                if (!$loginExistente) {
+                    // Vincular cuenta externa
+                    $externalLoginRecord = [
+                        'user_id' => $user->id,
+                        'login_provider' => $externalLoginModel->provider,
+                        'provider_key' => $externalLoginModel->providerKey,
+                        'provider_display_name' => $googleUserInfo['name'] ?? $externalLoginModel->provider
+                    ];
+                    
+                    if (!$this->userRepository->addExternalLogin($externalLoginRecord)) {
+                        error_log("Error vinculando cuenta externa para usuario: " . $user->id);
+                    }
+                }
+                
+                // Verificar que el usuario puede hacer login
+                $loginCheck = AuthService::canLogin($user);
+                if (!$loginCheck['can_login']) {
+                    $this->sendResponse(401, $loginCheck['reason'], null, false);
+                }
+                
+                // Si el email no está confirmado y viene de Google, confirmarlo automáticamente
+                if (!$user->email_confirmed && $googleUserInfo['email_verified']) {
+                    $user->email_confirmed = true;
+                    $this->userRepository->update($user);
+                }
+                
+            } else {
+                // Usuario nuevo - crear cuenta automáticamente
+                $newUser = new User();
+                $newUser->generateId();
+                $newUser->email = $externalLoginModel->email;
+                $newUser->nick = $this->generateNickFromEmail($externalLoginModel->email);
+                $newUser->name = $googleUserInfo['given_name'] ?? '';
+                $newUser->surname1 = $googleUserInfo['family_name'] ?? '';
+                $newUser->email_confirmed = $googleUserInfo['email_verified'] ?? false;
+                $newUser->lockout_enabled = false;
+                $newUser->access_failed_count = 0;
+                $newUser->two_factor_enabled = false;
+                $newUser->phone_number_confirmed = false;
+                $newUser->created_at = date('Y-m-d H:i:s');
+                $newUser->security_stamp = bin2hex(random_bytes(16));
+                
+                // No establecer contraseña para cuentas externas
+                $newUser->password_hash = '';
+                
+                // Crear usuario
+                if ($this->userRepository->create($newUser)) {
+                    // Agregar login externo
+                    $externalLoginRecord = [
+                        'user_id' => $newUser->id,
+                        'login_provider' => $externalLoginModel->provider,
+                        'provider_key' => $externalLoginModel->providerKey,
+                        'provider_display_name' => $googleUserInfo['name'] ?? $externalLoginModel->provider
+                    ];
+                    
+                    if (!$this->userRepository->addExternalLogin($externalLoginRecord)) {
+                        error_log("Error agregando login externo para nuevo usuario: " . $newUser->id);
+                    }
+                    
+                    // Enviar email de bienvenida
+                    $emailService = new EmailService();
+                    $welcomeResult = $emailService->sendWelcomeEmail($newUser->email, $newUser->name);
+                    
+                    $user = $newUser;
+                } else {
+                    $this->sendResponse(500, "Error creando usuario con cuenta externa", null, false);
+                }
+            }
+            
+            // Generar JWT
+            $expiration = 86400; // 1 día por defecto para login externo
+            $jwtPayload = AuthService::generateJwtPayload($user, $expiration);
+            $token = $this->jwt->generateTokenFromPayload($jwtPayload);
+            
+            // Establecer cookie
+            $this->jwt->setCookie($token, 'auth_token', $expiration);
+            
+            // Respuesta exitosa
+            $this->sendResponse(200, "Login externo exitoso", [
+                'user' => [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                    'nick' => $user->nick,
+                    'name' => $user->name,
+                    'emailConfirmed' => $user->email_confirmed
+                ],
+                'provider' => $externalLoginModel->provider,
+                'isNewUser' => !isset($loginExistente)
+            ], true);
+            
+        } catch (Exception $e) {
+            error_log("Error en externalLogin: " . $e->getMessage());
+            $this->sendResponse(500, "Error interno del servidor", null, false);
+        }
+    }
+
+    /**
+     * Genera un nick único basado en el email
+     * Método auxiliar para cuentas externas
+     */
+    private function generateNickFromEmail($email) {
+        $baseName = explode('@', $email)[0];
+        $baseName = preg_replace('/[^a-zA-Z0-9]/', '', $baseName);
+        
+        // Verificar si el nick está disponible
+        $counter = 0;
+        $nick = $baseName;
+        
+        while ($this->userRepository->nickExists($nick)) {
+            $counter++;
+            $nick = $baseName . $counter;
+            
+            // Evitar bucle infinito
+            if ($counter > 999) {
+                $nick = $baseName . '_' . uniqid();
+                break;
+            }
+        }
+        
+        return $nick;
     }
 }
 ?>

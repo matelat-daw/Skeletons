@@ -69,49 +69,7 @@ class Star {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if($row) {
-            $this->id = $row['id'];
-            $this->x = $row['x'];
-            $this->y = $row['y'];
-            $this->z = $row['z'];
-            $this->ra = $row['ra'];
-            $this->dec = $row['dec'];
-            $this->mag = $row['mag'];
-            $this->ci = $row['ci'];
-            $this->bf = $row['bf'];
-            $this->hr = $row['hr'];
-            $this->proper = $row['proper'];
-            $this->az = $row['az'];
-            $this->alt = $row['alt'];
-            $this->hip = $row['hip'];
-            $this->hd = $row['hd'];
-            $this->gl = $row['gl'];
-            $this->dist = $row['dist'];
-            $this->pmra = $row['pmra'];
-            $this->pmdec = $row['pmdec'];
-            $this->rv = $row['rv'];
-            $this->absmag = $row['absmag'];
-            $this->spect = $row['spect'];
-            $this->vx = $row['vx'];
-            $this->vy = $row['vy'];
-            $this->vz = $row['vz'];
-            $this->rarad = $row['rarad'];
-            $this->decrad = $row['decrad'];
-            $this->pmrarad = $row['pmrarad'];
-            $this->pmdecrad = $row['pmdecrad'];
-            $this->bayer = $row['bayer'];
-            $this->flam = $row['flam'];
-            $this->con = $row['con'];
-            $this->comp = $row['comp'];
-            $this->comp_primary = $row['comp_primary'];
-            $this->base = $row['base'] ?? $row['_base'] ?? null; // Manejar ambos nombres
-            $this->lum = $row['lum'];
-            $this->var = $row['var'];
-            $this->var_min = $row['var_min'];
-            $this->var_max = $row['var_max'];
-            $this->x_gal = $row['x_gal'];
-            $this->y_gal = $row['y_gal'];
-            $this->z_gal = $row['z_gal'];
-            return true;
+            return $row; // Devolver directamente el array
         }
         
         return false;

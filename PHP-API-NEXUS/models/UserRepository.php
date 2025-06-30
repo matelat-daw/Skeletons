@@ -210,6 +210,100 @@ class UserRepository {
         return $users;
     }
 
+    /**
+     * Buscar login externo de un usuario
+     * Compatible con ASP.NET Identity AspNetUserLogins
+     */
+    public function findExternalLogin($userId, $provider) {
+        $query = "SELECT LoginProvider, ProviderKey, ProviderDisplayName, UserId
+                  FROM AspNetUserLogins 
+                  WHERE UserId = :userId AND LoginProvider = :provider";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":userId", $userId);
+        $stmt->bindParam(":provider", $provider);
+        $stmt->execute();
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Agregar login externo para un usuario
+     * Compatible con ASP.NET Identity AspNetUserLogins
+     */
+    public function addExternalLogin($externalLoginData) {
+        $query = "INSERT INTO AspNetUserLogins 
+                  (LoginProvider, ProviderKey, ProviderDisplayName, UserId) 
+                  VALUES (:provider, :providerKey, :displayName, :userId)";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":provider", $externalLoginData['login_provider']);
+        $stmt->bindParam(":providerKey", $externalLoginData['provider_key']);
+        $stmt->bindParam(":displayName", $externalLoginData['provider_display_name']);
+        $stmt->bindParam(":userId", $externalLoginData['user_id']);
+        
+        return $stmt->execute();
+    }
+
+    /**
+     * Buscar usuario por login externo
+     * Compatible con ASP.NET Identity
+     */
+    public function findByExternalLogin($provider, $providerKey) {
+        $query = "SELECT u.Id, u.UserName, u.Email, u.PasswordHash, u.EmailConfirmed, 
+                         u.Nick, u.Name, u.Surname1, u.Surname2, u.PhoneNumber, 
+                         u.ProfileImage, u.Bday, u.About, u.UserLocation, u.PublicProfile
+                  FROM " . $this->table_name . " u
+                  INNER JOIN AspNetUserLogins ul ON u.Id = ul.UserId
+                  WHERE ul.LoginProvider = :provider AND ul.ProviderKey = :providerKey";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":provider", $provider);
+        $stmt->bindParam(":providerKey", $providerKey);
+        $stmt->execute();
+        
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($row) {
+            return new User($row);
+        }
+        
+        return null;
+    }
+
+    /**
+     * Eliminar login externo de un usuario
+     * Compatible con ASP.NET Identity
+     */
+    public function removeExternalLogin($userId, $provider, $providerKey) {
+        $query = "DELETE FROM AspNetUserLogins 
+                  WHERE UserId = :userId AND LoginProvider = :provider AND ProviderKey = :providerKey";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":userId", $userId);
+        $stmt->bindParam(":provider", $provider);
+        $stmt->bindParam(":providerKey", $providerKey);
+        
+        return $stmt->execute();
+    }
+
+    /**
+     * Obtener todos los logins externos de un usuario
+     * Compatible con ASP.NET Identity
+     */
+    public function getExternalLogins($userId) {
+        $query = "SELECT LoginProvider, ProviderKey, ProviderDisplayName
+                  FROM AspNetUserLogins 
+                  WHERE UserId = :userId
+                  ORDER BY LoginProvider";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":userId", $userId);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Generar GUID compatible con ASP.NET
     private function generateGuid() {
         return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
