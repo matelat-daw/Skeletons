@@ -15,6 +15,10 @@ class Register {
     public $about;
     public $user_location;
     public $public_profile;
+    public $gender;
+    public $country;
+    public $city;
+    public $postal_code;
 
     // Constructor para inicializar propiedades desde array
     public function __construct($data = []) {
@@ -33,12 +37,16 @@ class Register {
         $this->email = $data['email'] ?? $data['Email'] ?? null;
         $this->password = $data['password'] ?? $data['Password'] ?? null;
         $this->password2 = $data['password2'] ?? $data['Password2'] ?? $data['confirmPassword'] ?? $data['ConfirmPassword'] ?? null;
-        $this->phone_number = $data['phoneNumber'] ?? $data['phone_number'] ?? $data['PhoneNumber'] ?? null;
-        $this->bday = $data['bday'] ?? $data['Bday'] ?? null;
+        $this->phone_number = $data['phoneNumber'] ?? $data['phone_number'] ?? $data['PhoneNumber'] ?? $data['phone'] ?? null;
+        $this->bday = $data['bday'] ?? $data['Bday'] ?? $data['birthdate'] ?? $data['Birthdate'] ?? null;
         $this->profile_image_file = $data['profileImageFile'] ?? $data['profile_image_file'] ?? $data['ProfileImageFile'] ?? null;
         $this->about = $data['about'] ?? $data['About'] ?? null;
         $this->user_location = $data['userLocation'] ?? $data['user_location'] ?? $data['UserLocation'] ?? null;
         $this->public_profile = $data['publicProfile'] ?? $data['public_profile'] ?? $data['PublicProfile'] ?? true;
+        $this->gender = $data['gender'] ?? $data['Gender'] ?? null;
+        $this->country = $data['country'] ?? $data['Country'] ?? null;
+        $this->city = $data['city'] ?? $data['City'] ?? null;
+        $this->postal_code = $data['postal_code'] ?? $data['postalCode'] ?? $data['PostalCode'] ?? null;
     }
 
     // Convertir a array para respuestas JSON (sin incluir passwords por seguridad)

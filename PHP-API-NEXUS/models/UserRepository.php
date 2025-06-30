@@ -159,7 +159,8 @@ class UserRepository {
         $query = "UPDATE " . $this->table_name . " 
                   SET Nick = :nick, Name = :name, Surname1 = :surname1, Surname2 = :surname2,
                       PhoneNumber = :phone_number, ProfileImage = :profile_image, Bday = :birthday,
-                      About = :about, UserLocation = :user_location, PublicProfile = :public_profile
+                      About = :about, UserLocation = :user_location, PublicProfile = :public_profile,
+                      EmailConfirmed = :email_confirmed
                   WHERE Id = :id";
 
         $stmt = $this->conn->prepare($query);
@@ -175,6 +176,7 @@ class UserRepository {
         $stmt->bindParam(":about", $user->about);
         $stmt->bindParam(":user_location", $user->user_location);
         $stmt->bindParam(":public_profile", $user->public_profile);
+        $stmt->bindParam(":email_confirmed", $user->email_confirmed);
 
         return $stmt->execute();
     }

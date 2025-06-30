@@ -32,7 +32,7 @@ class EmailConfirmation {
         $this->deleteUserTokens();
         
         $query = "INSERT INTO " . $this->table_name . " 
-                  (UserId, Email, Token, ExpiresAt, CreatedAt) 
+                  (user_id, email, token, expires_at, created_at) 
                   VALUES (:user_id, :email, :token, :expires_at, :created_at)";
 
         $stmt = $this->conn->prepare($query);
@@ -47,9 +47,9 @@ class EmailConfirmation {
 
     // Buscar token válido
     public function findValidToken($token) {
-        $query = "SELECT UserId, Email, Token, ExpiresAt, CreatedAt, ConfirmedAt 
+        $query = "SELECT user_id, email, token, expires_at, created_at, used_at 
                   FROM " . $this->table_name . " 
-                  WHERE Token = :token AND ExpiresAt > GETDATE() AND ConfirmedAt IS NULL";
+                  WHERE token = :token AND expires_at > GETDATE() AND used = 0";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":token", $token);
@@ -58,12 +58,12 @@ class EmailConfirmation {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($row) {
-            $this->user_id = $row['UserId'];
-            $this->email = $row['Email'];
-            $this->token = $row['Token'];
-            $this->expires_at = $row['ExpiresAt'];
-            $this->created_at = $row['CreatedAt'];
-            $this->confirmed_at = $row['ConfirmedAt'];
+            $this->user_id = $row['user_id'];
+            $this->email = $row['email'];
+            $this->token = $row['token'];
+            $this->expires_at = $row['expires_at'];
+            $this->created_at = $row['created_at'];
+            $this->confirmed_at = $row['used_at'];
             return true;
         }
 
@@ -73,8 +73,8 @@ class EmailConfirmation {
     // Marcar token como confirmado
     public function confirmToken($token) {
         $query = "UPDATE " . $this->table_name . " 
-                  SET ConfirmedAt = GETDATE() 
-                  WHERE Token = :token AND ConfirmedAt IS NULL";
+                  SET used = 1, used_at = GETDATE() 
+                  WHERE token = :token AND used = 0";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":token", $token);
@@ -84,7 +84,7 @@ class EmailConfirmation {
 
     // Eliminar tokens anteriores del usuario
     private function deleteUserTokens() {
-        $query = "DELETE FROM " . $this->table_name . " WHERE UserId = :user_id";
+        $query = "DELETE FROM " . $this->table_name . " WHERE user_id = :user_id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":user_id", $this->user_id);
         return $stmt->execute();
@@ -92,7 +92,7 @@ class EmailConfirmation {
 
     // Limpiar tokens expirados (mantenimiento)
     public function cleanupExpiredTokens() {
-        $query = "DELETE FROM " . $this->table_name . " WHERE ExpiresAt < GETDATE()";
+        $query = "DELETE FROM " . $this->table_name . " WHERE expires_at < GETDATE()";
         $stmt = $this->conn->prepare($query);
         return $stmt->execute();
     }

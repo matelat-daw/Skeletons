@@ -1,7 +1,9 @@
 <?php
 /**
  * Test simple del endpoint de registro usando cURL
- */
+            $stmt = $conn->prepare("SELECT token FROM EmailConfirmationTokens WHERE email = ? AND used = 0 ORDER BY created_at DESC LIMIT 1");
+            $stmt->execute([$testUser['email']]);
+            $result = $stmt->fetch();
 
 $baseUrl = 'http://localhost:8080/Skeletons/PHP-API-NEXUS';
 
@@ -68,8 +70,8 @@ if ($decoded) {
             $stmt->execute();
             $result = $stmt->get_result();
             
-            if ($row = $result->fetch_assoc()) {
-                $token = $row['token'];
+            if ($result && $result['token']) {
+                $token = $result['token'];
                 echo "Token encontrado: " . substr($token, 0, 20) . "...\n";
                 
                 // Probar confirmación de email
@@ -147,12 +149,10 @@ if ($decoded) {
             echo "\n=== LIMPIANDO DATOS DE PRUEBA ===\n";
             
             $stmt = $conn->prepare("DELETE FROM EmailConfirmationTokens WHERE email = ?");
-            $stmt->bind_param('s', $userData['email']);
-            $stmt->execute();
+            $stmt->execute([$userData['email']]);
             
-            $stmt = $conn->prepare("DELETE FROM users WHERE email = ?");
-            $stmt->bind_param('s', $userData['email']);
-            $stmt->execute();
+            $stmt = $conn->prepare("DELETE FROM AspNetUsers WHERE Email = ?");
+            $stmt->execute([$userData['email']]);
             
             echo "✅ Datos de prueba eliminados\n";
             
