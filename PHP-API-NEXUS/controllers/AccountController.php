@@ -5,17 +5,17 @@
 require_once 'BaseController.php';
 
 class AccountController extends BaseController {
-    private $user;
+    private $userRepository;
     private $favorites;
     private $comments;
     
     public function __construct() {
         parent::__construct();
-        require_once 'models/User.php';
+        require_once 'models/UserRepository.php';
         require_once 'models/Favorites.php';
         require_once 'models/Comments.php';
         
-        $this->user = new User($this->dbManager->getNexusUsersConnection());
+        $this->userRepository = new UserRepository($this->dbManager->getNexusUsersConnection());
         $this->favorites = new Favorites($this->dbManager->getNexusUsersConnection());
         $this->comments = new Comments($this->dbManager->getNexusUsersConnection());
     }
@@ -32,8 +32,9 @@ class AccountController extends BaseController {
             $userId = $tokenData['user_id'];
             $userEmail = $tokenData['email'];
             
-            // Buscar usuario por email
-            if (!$this->user->findProfileByEmail($userEmail)) {
+            // Buscar usuario por email con perfil completo
+            $user = $this->userRepository->findByEmail($userEmail, true);
+            if (!$user) {
                 $this->sendResponse(404, "Usuario no encontrado", null, false);
             }
             
@@ -69,22 +70,10 @@ class AccountController extends BaseController {
                 error_log("Error obteniendo comentarios: " . $e->getMessage());
             }
             
-            // Preparar datos del perfil
-            $profileData = [
-                'nick' => $this->user->nick ?? '',
-                'name' => $this->user->name ?? '',
-                'surname1' => $this->user->surname1 ?? '',
-                'surname2' => $this->user->surname2 ?? '',
-                'email' => $this->user->email ?? '',
-                'phoneNumber' => !empty($this->user->phone_number) ? $this->user->phone_number : '',
-                'profileImage' => $this->user->profile_image ?? '',
-                'bday' => $this->user->birthday ?? '',
-                'about' => $this->user->about ?? '',
-                'userLocation' => $this->user->user_location ?? '',
-                'publicProfile' => (bool)($this->user->public_profile ?? true),
-                'favorites' => $userFavorites,
-                'comments' => $userComments
-            ];
+            // Preparar respuesta usando el método toArray del modelo User
+            $profileData = $user->toArray();
+            $profileData['favorites'] = $userFavorites;
+            $profileData['comments'] = $userComments;
             
             $this->sendResponse(200, "Perfil obtenido exitosamente", $profileData, true);
             

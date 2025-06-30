@@ -5,12 +5,15 @@
 require_once 'BaseController.php';
 
 class AuthController extends BaseController {
-    private $user;
+    private $userRepository;
+    private $authService;
     
     public function __construct() {
         parent::__construct();
-        require_once 'models/User.php';
-        $this->user = new User($this->dbManager->getNexusUsersConnection());
+        require_once 'models/UserRepository.php';
+        require_once 'services/AuthService.php';
+        $this->userRepository = new UserRepository($this->dbManager->getNexusUsersConnection());
+        $this->authService = new AuthService();
     }
     
     /**
@@ -32,35 +35,31 @@ class AuthController extends BaseController {
             $email = $this->sanitizeString($input['email']);
             $password = $input['password']; // No sanitizar la contraseña
             
-            // Validar formato de email
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $this->sendResponse(400, "Formato de email inválido", null, false);
+            // Validar credenciales básicas
+            if (!AuthService::validateCredentials($email, $password)) {
+                $this->sendResponse(400, "Formato de credenciales inválido", null, false);
             }
             
             // Buscar usuario por email
-            if (!$this->user->findByEmail($email)) {
+            $user = $this->userRepository->findByEmail($email);
+            if (!$user) {
                 $this->sendResponse(401, "Credenciales inválidas", null, false);
             }
             
-            // Verificar que el email esté confirmado
-            if (!$this->user->email_confirmed) {
-                $this->sendResponse(401, "Email no confirmado. Verifica tu correo electrónico.", null, false);
+            // Verificar que el usuario puede hacer login
+            $loginCheck = AuthService::canLogin($user);
+            if (!$loginCheck['can_login']) {
+                $this->sendResponse(401, $loginCheck['reason'], null, false);
             }
             
             // Verificar contraseña
-            if (!$this->user->verifyPassword($password)) {
+            if (!AuthService::verifyPassword($password, $user->password_hash)) {
                 $this->sendResponse(401, "Credenciales inválidas", null, false);
             }
             
             // Generar JWT
-            $userData = [
-                'user_id' => $this->user->id,
-                'email' => $this->user->email,
-                'nick' => $this->user->nick,
-                'username' => $this->user->nick
-            ];
-            
-            $token = $this->jwt->generateToken($userData);
+            $jwtPayload = AuthService::generateJwtPayload($user);
+            $token = $this->jwt->generateToken($jwtPayload);
             
             // Establecer cookie
             $this->jwt->setTokenCookie($token);
@@ -68,10 +67,10 @@ class AuthController extends BaseController {
             // Respuesta exitosa
             $this->sendResponse(200, "Login exitoso", [
                 'user' => [
-                    'id' => $this->user->id,
-                    'email' => $this->user->email,
-                    'nick' => $this->user->nick,
-                    'name' => $this->user->name
+                    'id' => $user->id,
+                    'email' => $user->email,
+                    'nick' => $user->nick,
+                    'name' => $user->name
                 ]
             ], true);
             

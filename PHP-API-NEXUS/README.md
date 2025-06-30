@@ -9,6 +9,8 @@ API REST desarrollada en PHP para autenticación de usuarios compatible con ASP.
 - ✅ **Conexión SQL Server** - Soporte nativo con drivers sqlsrv
 - ✅ **CORS configurado** - Listo para aplicaciones Angular/React
 - ✅ **Seguridad optimizada** - Validaciones, sanitización y manejo de errores
+- ✅ **Arquitectura MVC** - Controladores, modelos y servicios separados
+- ✅ **Enrutamiento centralizado** - Todo el tráfico pasa por index.php
 
 ## ⚙️ Configuración
 
@@ -37,9 +39,40 @@ ENVIRONMENT=production
 DEBUG=false
 ```
 
+## 🏗️ Arquitectura
+
+### Estructura de Carpetas
+```
+PHP-API-NEXUS/
+├── index.php              # Punto de entrada único (enrutador)
+├── .htaccess              # Configuración Apache (redirección)
+├── .env                   # Variables de entorno
+├── config/                # Configuración
+│   ├── database.php       # Conexiones BD
+│   ├── Router.php         # Sistema de rutas
+│   └── jwt.php           # Configuración JWT
+├── controllers/           # Controladores MVC
+│   ├── AuthController.php # Autenticación
+│   ├── AccountController.php # Perfil de usuario
+│   └── BaseController.php # Controlador base
+├── models/               # Modelos y repositorios
+│   ├── User.php          # Modelo de usuario (solo propiedades)
+│   ├── UserRepository.php # Acceso a datos de usuario
+│   ├── Favorites.php     # Modelo de favoritos
+│   └── Comments.php      # Modelo de comentarios
+└── services/             # Servicios de negocio
+    └── AuthService.php   # Lógica de autenticación
+```
+
+### Patrón de Arquitectura
+- **Modelo**: Solo propiedades y métodos de utilidad
+- **Repository**: Acceso a datos y consultas SQL
+- **Service**: Lógica de negocio y validaciones
+- **Controller**: Manejo de HTTP y coordinación
+
 ## 🔐 API Endpoints
 
-### POST `/api/Auth/Login.php`
+### POST `/Auth/Login`
 
 **Request:**
 ```json
@@ -72,18 +105,45 @@ DEBUG=false
 - `403`: Email no verificado
 - `500`: Error interno
 
-### Características
+### GET `/Account/Profile`
 
-#### JWT Token
-- **Algoritmo**: HS256
-- **Duración**: 24 horas
-- **Incluye**: user_id, email, nick, iat, exp
+**Headers requeridos:**
+```
+Cookie: auth_token=your_jwt_token_here
+```
 
-#### Cookie
-- **Nombre**: `auth_token`
-- **HttpOnly**: true (seguridad)
-- **SameSite**: Lax (protección CSRF)
-- **Duración**: 24 horas
+**Response exitosa (200)**:
+```json
+{
+    "message": "Perfil obtenido exitosamente",
+    "data": {
+        "id": "user-guid-here",
+        "nick": "testuser",
+        "email": "test@example.com",
+        "name": "Usuario",
+        "surname1": "Apellido1",
+        "surname2": "Apellido2",
+        "phoneNumber": "+34123456789",
+        "profileImage": "path/to/image.jpg",
+        "bday": "1990-01-01",
+        "about": "Descripción del usuario",
+        "userLocation": "Madrid, España",
+        "publicProfile": true,
+        "emailConfirmed": true,
+        "favorites": [...],
+        "comments": [...]
+    }
+}
+```
+
+### POST `/Account/Logout`
+
+**Response exitosa (200)**:
+```json
+{
+    "message": "Sesión cerrada exitosamente"
+}
+```
 
 #### CORS
 - **Origin**: `http://localhost:4200`
