@@ -32,7 +32,7 @@ class Register {
         $this->surname2 = $data['surname2'] ?? $data['Surname2'] ?? null;
         $this->email = $data['email'] ?? $data['Email'] ?? null;
         $this->password = $data['password'] ?? $data['Password'] ?? null;
-        $this->password2 = $data['password2'] ?? $data['Password2'] ?? null;
+        $this->password2 = $data['password2'] ?? $data['Password2'] ?? $data['confirmPassword'] ?? $data['ConfirmPassword'] ?? null;
         $this->phone_number = $data['phoneNumber'] ?? $data['phone_number'] ?? $data['PhoneNumber'] ?? null;
         $this->bday = $data['bday'] ?? $data['Bday'] ?? null;
         $this->profile_image_file = $data['profileImageFile'] ?? $data['profile_image_file'] ?? $data['ProfileImageFile'] ?? null;
