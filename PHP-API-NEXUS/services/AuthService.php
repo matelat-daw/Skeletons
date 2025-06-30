@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/User.php';
+require_once __DIR__ . '/../models/User.php';
 
 class AuthService {
     
@@ -94,7 +94,12 @@ class AuthService {
     }
 
     // Generar datos para JWT
-    public static function generateJwtPayload(User $user) {
+    public static function generateJwtPayload(User $user, $expiration = null) {
+        // Si no se especifica expiración, usar la predeterminada (24 horas)
+        if ($expiration === null) {
+            $expiration = 24 * 60 * 60; // 24 horas
+        }
+        
         return [
             'user_id' => $user->id,
             'email' => $user->email,
@@ -102,7 +107,7 @@ class AuthService {
             'username' => $user->nick,
             'email_confirmed' => $user->email_confirmed,
             'iat' => time(),
-            'exp' => time() + (24 * 60 * 60) // 24 horas
+            'exp' => time() + $expiration
         ];
     }
 

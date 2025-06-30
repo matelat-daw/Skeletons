@@ -24,6 +24,9 @@ class Router {
     private function registerRoutes() {
         // Rutas de Autenticación
         $this->addRoute('POST', '/api/Auth/Login', 'AuthController', 'login');
+        $this->addRoute('POST', '/api/Auth/Register', 'AuthController', 'register');
+        $this->addRoute('GET', '/api/Auth/ConfirmEmail', 'AuthController', 'confirmEmail');
+        $this->addRoute('POST', '/api/Auth/ResendConfirmation', 'AuthController', 'resendConfirmation');
         
         // Rutas de Cuenta/Perfil
         $this->addRoute('GET', '/api/Account/Profile', 'AccountController', 'getProfile');
@@ -68,7 +71,7 @@ class Router {
         // Convertir {id} a grupos de captura
         $pattern = preg_replace('/\\\{([^}]+)\\\}/', '([^/]+)', $pattern);
         
-        return '/^' . str_replace('/', '\/', $pattern) . '$/';
+        return '/^' . $pattern . '$/';
     }
 
     /**

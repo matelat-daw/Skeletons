@@ -106,10 +106,12 @@ class UserRepository {
     public function create(User $user) {
         $query = "INSERT INTO " . $this->table_name . " 
                   (Id, UserName, Email, PasswordHash, EmailConfirmed, Nick, Name, Surname1, Surname2, 
-                   PhoneNumber, ProfileImage, Bday, About, UserLocation, PublicProfile) 
+                   PhoneNumber, ProfileImage, Bday, About, UserLocation, PublicProfile, 
+                   AccessFailedCount, LockoutEnabled, TwoFactorEnabled, PhoneNumberConfirmed, SecurityStamp) 
                   VALUES (:id, :username, :email, :password_hash, :email_confirmed, :nick, :name, 
                           :surname1, :surname2, :phone_number, :profile_image, :birthday, :about, 
-                          :user_location, :public_profile)";
+                          :user_location, :public_profile, :access_failed_count, :lockout_enabled, 
+                          :two_factor_enabled, :phone_number_confirmed, :security_stamp)";
 
         $stmt = $this->conn->prepare($query);
         
@@ -117,6 +119,16 @@ class UserRepository {
         if (empty($user->id)) {
             $user->id = $this->generateGuid();
         }
+
+        // Valores por defecto para campos obligatorios de ASP.NET Identity
+        $access_failed_count = 0;
+        $lockout_enabled = true;
+        $two_factor_enabled = false;
+        $phone_number_confirmed = false;
+        $security_stamp = $this->generateGuid(); // Security stamp único
+        
+        // Si Bday está vacío, usar una fecha por defecto
+        $birthday = $user->birthday ?: '1900-01-01';
 
         $stmt->bindParam(":id", $user->id);
         $stmt->bindParam(":username", $user->nick);
@@ -129,10 +141,15 @@ class UserRepository {
         $stmt->bindParam(":surname2", $user->surname2);
         $stmt->bindParam(":phone_number", $user->phone_number);
         $stmt->bindParam(":profile_image", $user->profile_image);
-        $stmt->bindParam(":birthday", $user->birthday);
+        $stmt->bindParam(":birthday", $birthday);
         $stmt->bindParam(":about", $user->about);
         $stmt->bindParam(":user_location", $user->user_location);
         $stmt->bindParam(":public_profile", $user->public_profile);
+        $stmt->bindParam(":access_failed_count", $access_failed_count);
+        $stmt->bindParam(":lockout_enabled", $lockout_enabled);
+        $stmt->bindParam(":two_factor_enabled", $two_factor_enabled);
+        $stmt->bindParam(":phone_number_confirmed", $phone_number_confirmed);
+        $stmt->bindParam(":security_stamp", $security_stamp);
 
         return $stmt->execute();
     }

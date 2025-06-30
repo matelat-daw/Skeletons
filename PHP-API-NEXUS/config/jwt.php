@@ -31,6 +31,19 @@ class JWTHandler {
         return $base64Header . "." . $base64Payload . "." . $base64Signature;
     }
     
+    public function generateTokenFromPayload($payload) {
+        $header = json_encode(['typ' => 'JWT', 'alg' => $this->algorithm]);
+        $payloadJson = json_encode($payload);
+        
+        $base64Header = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
+        $base64Payload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payloadJson));
+        
+        $signature = hash_hmac('sha256', $base64Header . "." . $base64Payload, $this->secret_key, true);
+        $base64Signature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
+        
+        return $base64Header . "." . $base64Payload . "." . $base64Signature;
+    }
+    
     public function validateToken($token) {
         $parts = explode('.', $token);
         
@@ -59,12 +72,17 @@ class JWTHandler {
         return $payloadData;
     }
     
-    public function setCookie($token, $name = 'auth_token') {
+    public function setCookie($token, $name = 'auth_token', $expiration = null) {
+        // Si no se especifica expiración, usar la predeterminada (24 horas)
+        if ($expiration === null) {
+            $expiration = 24 * 60 * 60; // 24 horas
+        }
+        
         setcookie(
             $name,
             $token,
             [
-                'expires' => time() + (24 * 60 * 60), // 24 horas
+                'expires' => time() + $expiration,
                 'path' => '/',
                 'domain' => '', // Ajustar según tu dominio
                 'secure' => false, // Cambiar a true en HTTPS
