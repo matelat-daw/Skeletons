@@ -50,6 +50,18 @@
     <button onclick="testUpdateProfilePatch()">Test Update Profile (PATCH multipart)</button>
     <button onclick="testUpdateProfileWithDifferentDateFormats()">Test Different Date Formats</button>
     
+    <hr>
+    
+    <h2>Test de Registro (Auth/Register)</h2>
+    <button onclick="testRegisterJSON()">Test Register with JSON</button>
+    <button onclick="testRegisterFormData()">Test Register with FormData</button>
+    
+    <hr>
+    
+    <h2>Test Registro de Usuario (Auth/Register)</h2>
+    <button onclick="testRegisterUser()">Test Register User (JSON)</button>
+    <button onclick="testRegisterUserFormData()">Test Register User (FormData)</button>
+    
     <script>
         function testJsonFetch() {
             const data = {
@@ -194,24 +206,24 @@
         }
         
         function testUpdateProfileWithDifferentDateFormats() {
+            // Test múltiples formatos de fecha
             const dateFormats = [
-                '1985-06-15',    // YYYY-MM-DD
-                '15/06/1985',    // DD/MM/YYYY
-                '06/15/1985',    // MM/DD/YYYY
-                '15-06-1985',    // DD-MM-YYYY
-                '06-15-1985'     // MM-DD-YYYY
+                '1990-12-25',      // YYYY-MM-DD
+                '25/12/1990',      // DD/MM/YYYY
+                '12/25/1990',      // MM/DD/YYYY
+                '25-12-1990',      // DD-MM-YYYY
+                '12-25-1990'       // MM-DD-YYYY
             ];
             
             dateFormats.forEach((dateFormat, index) => {
                 setTimeout(() => {
                     const formData = new FormData();
-                    formData.append('Name', `Test Date Format ${index + 1}`);
-                    formData.append('Email', `testdate${index + 1}@example.com`);
-                    formData.append('Nick', `testdatenick${index + 1}`);
+                    formData.append('Name', `Test Name ${index + 1}`);
+                    formData.append('Email', `test${index + 1}@example.com`);
+                    formData.append('Nick', `testnick${index + 1}`);
+                    formData.append('Surname1', 'TestSurname1');
                     formData.append('Bday', dateFormat);
                     formData.append('PublicProfile', '1');
-                    
-                    console.log(`Testing date format: ${dateFormat}`);
                     
                     fetch('index.php?request=api/Account/TestData', {
                         method: 'PATCH',
@@ -219,15 +231,161 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        console.log(`Date format ${dateFormat} response:`, data);
+                        console.log(`Date format ${dateFormat} test response:`, data);
                     })
                     .catch(error => {
-                        console.error(`Error with date format ${dateFormat}:`, error);
+                        console.error(`Error testing date format ${dateFormat}:`, error);
                     });
-                }, index * 1000); // Esperar 1 segundo entre cada test
+                }, index * 1000); // Delay para evitar sobrecarga
             });
             
-            alert('Testing different date formats - check console for results');
+            alert('Date format tests started - check console for results');
+        }
+        
+        function testRegisterJSON() {
+            const registerData = {
+                Nick: "testuserregister" + Date.now(),
+                Name: "Test User",
+                Surname1: "Register",
+                Surname2: "Test",
+                Email: "testregister" + Date.now() + "@example.com",
+                Password: "password123",
+                Password2: "password123",
+                PhoneNumber: "123456789",
+                Bday: "1990-01-01",
+                About: "Test user for registration",
+                UserLocation: "Test City",
+                PublicProfile: true
+            };
+            
+            console.log('Sending register data:', registerData);
+            
+            fetch('index.php?request=api/Auth/Register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(registerData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Register JSON Response:', data);
+                alert('Register JSON test completed - check console. Success: ' + data.success);
+            })
+            .catch(error => {
+                console.error('Register JSON Error:', error);
+                alert('Register JSON test failed - check console');
+            });
+        }
+        
+        function testRegisterFormData() {
+            const timestamp = Date.now();
+            const formData = new FormData();
+            formData.append('Nick', 'testuserform' + timestamp);
+            formData.append('Name', 'Test User FormData');
+            formData.append('Surname1', 'Register');
+            formData.append('Surname2', 'Test');
+            formData.append('Email', 'testregisterform' + timestamp + '@example.com');
+            formData.append('Password', 'password123');
+            formData.append('Password2', 'password123');
+            formData.append('PhoneNumber', '123456789');
+            formData.append('Bday', '1990-01-01');
+            formData.append('About', 'Test user for registration with FormData');
+            formData.append('UserLocation', 'Test City FormData');
+            formData.append('PublicProfile', '1');
+            
+            console.log('Sending register FormData...');
+            
+            fetch('index.php?request=api/Auth/Register', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Register FormData Response:', data);
+                alert('Register FormData test completed - check console. Success: ' + data.success);
+            })
+            .catch(error => {
+                console.error('Register FormData Error:', error);
+                alert('Register FormData test failed - check console');
+            });
+        }
+        
+        function testRegisterUser() {
+            const data = {
+                Nick: "testuserphp" + Date.now(), // Nick único
+                Name: "Test User PHP",
+                Surname1: "TestSurname1",
+                Surname2: "TestSurname2",
+                Email: "testuser" + Date.now() + "@example.com", // Email único
+                Password: "testpass123",
+                Password2: "testpass123", // Confirmación de contraseña
+                PhoneNumber: "123456789",
+                Bday: "1990-01-01",
+                About: "Test user about",
+                UserLocation: "Test Location",
+                PublicProfile: true
+            };
+            
+            console.log('Sending register data:', data);
+            
+            fetch('index.php?request=api/Auth/Register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Register Response:', data);
+                if (data.success) {
+                    alert('¡Registro exitoso! Usuario creado correctamente. Check console for details.');
+                } else {
+                    alert('Error en registro: ' + data.message + '\nErrors: ' + JSON.stringify(data.data?.errors || []));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error en registro - check console');
+            });
+        }
+        
+        function testRegisterUserFormData() {
+            const timestamp = Date.now();
+            const formData = new FormData();
+            formData.append('Nick', 'testuser' + timestamp);
+            formData.append('Name', 'Test User FormData');
+            formData.append('Surname1', 'TestSurname1');
+            formData.append('Surname2', 'TestSurname2');
+            formData.append('Email', 'testuser' + timestamp + '@example.com');
+            formData.append('Password', 'testpass123');
+            formData.append('Password2', 'testpass123');
+            formData.append('PhoneNumber', '123456789');
+            formData.append('Bday', '1990-01-01');
+            formData.append('About', 'Test user about FormData');
+            formData.append('UserLocation', 'Test Location FormData');
+            formData.append('PublicProfile', '1');
+            
+            console.log('Sending register FormData...');
+            
+            fetch('index.php?request=api/Auth/Register', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Register FormData Response:', data);
+                if (data.success) {
+                    alert('¡Registro FormData exitoso! Usuario creado correctamente. Check console for details.');
+                } else {
+                    alert('Error en registro FormData: ' + data.message + '\nErrors: ' + JSON.stringify(data.data?.errors || []));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error en registro FormData - check console');
+            });
         }
     </script>
 </body>

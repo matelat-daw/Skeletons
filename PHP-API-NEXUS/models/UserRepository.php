@@ -155,7 +155,7 @@ class UserRepository {
         $birthday = $user->bday ?: '1900-01-01';
 
         $stmt->bindParam(":id", $user->id);
-        $stmt->bindParam(":username", $user->nick);
+        $stmt->bindParam(":username", $user->userName);
         $stmt->bindParam(":email", $user->email);
         $stmt->bindParam(":password_hash", $user->passwordHash);
         

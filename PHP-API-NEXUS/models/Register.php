@@ -107,9 +107,9 @@ class Register {
             $errors[] = "El Username debe tener al menos 3 caracteres";
         } elseif (strlen($this->nick) > 50) {
             $errors[] = "El Username no puede tener más de 50 caracteres";
-        } elseif (!preg_match('/^[a-zA-Z0-9_-]+$/', $this->nick)) {
-            $errors[] = "El Username solo puede contener letras, números, guiones y guiones bajos";
         }
+        // Nota: En ASP.NET Identity, Username puede ser cualquier string válido, 
+        // no solo letras/números/guiones. Removida restricción de regex.
 
         // Campo Name (Required)
         if (empty($this->name)) {
@@ -262,10 +262,10 @@ class Register {
         $userData = [
             'Id' => $this->id,
             'Nick' => $this->nick,
-            'UserName' => $this->nick, // ASP.NET Identity usa UserName
+            'UserName' => $this->email, // ASP.NET Identity usa Email como UserName
             'Email' => $this->email,
             'NormalizedEmail' => strtoupper($this->email),
-            'NormalizedUserName' => strtoupper($this->nick),
+            'NormalizedUserName' => strtoupper($this->email),
             'Name' => $this->name,
             'Surname1' => $this->surname1,
             'Surname2' => $this->surname2,
