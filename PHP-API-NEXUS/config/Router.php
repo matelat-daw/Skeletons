@@ -48,6 +48,7 @@ class Router {
         
         // RUTA DE TEST TEMPORAL - ELIMINAR DESPUÉS
         $this->addRoute('POST', '/api/Account/TestData', 'AccountController', 'testDataReceive');
+        $this->addRoute('PATCH', '/api/Account/TestData', 'AccountController', 'testDataReceive');
         
         // Rutas de Favoritos
         $this->addRoute('GET', '/api/Account/Favorites', 'FavoritesController', 'getUserFavorites');

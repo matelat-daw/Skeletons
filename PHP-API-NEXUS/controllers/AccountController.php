@@ -245,7 +245,24 @@ class AccountController extends BaseController {
             $user->phoneNumber = isset($data['PhoneNumber']) ? $this->sanitizeString($data['PhoneNumber']) : '';
             $user->userLocation = isset($data['UserLocation']) ? $this->sanitizeString($data['UserLocation']) : '';
             $user->about = isset($data['About']) ? $this->sanitizeString($data['About']) : '';
-            $user->publicProfile = isset($data['PublicProfile']) ? ($data['PublicProfile'] === '1' || $data['PublicProfile'] === true) : true;
+            
+            // Manejar PublicProfile de forma robusta (string "1"/"0", boolean true/false, checkbox presente/ausente)
+            if (isset($data['PublicProfile'])) {
+                if (is_bool($data['PublicProfile'])) {
+                    $user->publicProfile = $data['PublicProfile'];
+                } else {
+                    // Convertir string a boolean: "1", "true", "on" = true; "0", "false", "" = false
+                    $value = strtolower(trim($data['PublicProfile']));
+                    $user->publicProfile = in_array($value, ['1', 'true', 'on', 'yes'], true);
+                }
+            } else {
+                // Si no se envía PublicProfile (checkbox no marcado), asumir false
+                $user->publicProfile = false;
+            }
+            
+            // Debug temporal para PublicProfile
+            error_log("UPDATE PROFILE: PublicProfile - Original: " . json_encode($data['PublicProfile'] ?? 'not_set') . 
+                     ", Final: " . ($user->publicProfile ? 'true' : 'false'));
             
             // Manejar fecha de nacimiento
             if (isset($data['Bday']) && !empty($data['Bday'])) {

@@ -158,7 +158,11 @@ class UserRepository {
         $stmt->bindParam(":username", $user->nick);
         $stmt->bindParam(":email", $user->email);
         $stmt->bindParam(":password_hash", $user->passwordHash);
-        $stmt->bindParam(":email_confirmed", $user->emailConfirmed);
+        
+        // Convertir boolean a entero para campo bit en BD
+        $emailConfirmedInt = $user->emailConfirmed ? 1 : 0;
+        $stmt->bindParam(":email_confirmed", $emailConfirmedInt, PDO::PARAM_INT);
+        
         $stmt->bindParam(":nick", $user->nick);
         $stmt->bindParam(":name", $user->name);
         $stmt->bindParam(":surname1", $user->surname1);
@@ -168,7 +172,11 @@ class UserRepository {
         $stmt->bindParam(":birthday", $birthday);
         $stmt->bindParam(":about", $user->about);
         $stmt->bindParam(":user_location", $user->userLocation);
-        $stmt->bindParam(":public_profile", $user->publicProfile);
+        
+        // Convertir boolean a entero para campo bit en BD
+        $publicProfileInt = $user->publicProfile ? 1 : 0;
+        $stmt->bindParam(":public_profile", $publicProfileInt, PDO::PARAM_INT);
+        
         $stmt->bindParam(":access_failed_count", $access_failed_count);
         $stmt->bindParam(":lockout_enabled", $lockout_enabled);
         $stmt->bindParam(":two_factor_enabled", $two_factor_enabled);
@@ -199,8 +207,14 @@ class UserRepository {
         $stmt->bindParam(":birthday", $user->bday);
         $stmt->bindParam(":about", $user->about);
         $stmt->bindParam(":user_location", $user->userLocation);
-        $stmt->bindParam(":public_profile", $user->publicProfile);
-        $stmt->bindParam(":email_confirmed", $user->emailConfirmed);
+        
+        // Convertir explícitamente boolean a entero para campo bit en BD
+        $publicProfileInt = $user->publicProfile ? 1 : 0;
+        $stmt->bindParam(":public_profile", $publicProfileInt, PDO::PARAM_INT);
+        
+        // Convertir boolean a entero para EmailConfirmed también
+        $emailConfirmedInt = $user->emailConfirmed ? 1 : 0;
+        $stmt->bindParam(":email_confirmed", $emailConfirmedInt, PDO::PARAM_INT);
 
         return $stmt->execute();
     }

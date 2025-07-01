@@ -16,20 +16,38 @@
         <label>UserLocation: <input type="text" name="UserLocation" value="Test Location" /></label><br><br>
         <label>PhoneNumber: <input type="text" name="PhoneNumber" value="123456789" /></label><br><br>
         <label>Bday: <input type="date" name="Bday" value="1990-01-01" /></label><br><br>
-        <label>PublicProfile: <input type="checkbox" name="PublicProfile" value="1" checked /></label><br><br>
+        <label>PublicProfile: <input type="checkbox" name="PublicProfile" value="1" checked /> (Checked = "1", Unchecked = not sent)</label><br><br>
         
-        <input type="submit" value="Send Multipart Data" />
+        <input type="submit" value="Send Multipart Data (Checkbox Checked)" />
+    </form>
+    
+    <br>
+    
+    <form action="index.php?request=api/Account/TestData" method="POST" enctype="multipart/form-data">
+        <label>Name: <input type="text" name="Name" value="Test Name 2" /></label><br><br>
+        <label>Email: <input type="email" name="Email" value="test2@example.com" /></label><br><br>
+        <label>Nick: <input type="text" name="Nick" value="testnick2" /></label><br><br>
+        <label>PublicProfile: <input type="checkbox" name="PublicProfile" value="1" /> (Unchecked)</label><br><br>
+        
+        <input type="submit" value="Send Multipart Data (Checkbox Unchecked)" />
     </form>
     
     <hr>
     
     <h2>Test con JavaScript Fetch (JSON)</h2>
-    <button onclick="testJsonFetch()">Send JSON Data</button>
+    <button onclick="testJsonFetch()">Send JSON Data (PublicProfile: true)</button>
+    <button onclick="testJsonFetchFalse()">Send JSON Data (PublicProfile: false)</button>
     
     <hr>
     
     <h2>Test con JavaScript Fetch (FormData)</h2>
-    <button onclick="testFormDataFetch()">Send FormData</button>
+    <button onclick="testFormDataFetch()">Send FormData (POST method)</button>
+    <button onclick="testFormDataPatchFetch()">Send FormData (PATCH method)</button>
+    
+    <hr>
+    
+    <h2>Test Específico para Update Profile (PATCH)</h2>
+    <button onclick="testUpdateProfilePatch()">Test Update Profile (PATCH multipart)</button>
     
     <script>
         function testJsonFetch() {
@@ -43,7 +61,7 @@
                 UserLocation: "Test Location JSON",
                 PhoneNumber: "123456789",
                 Bday: "1990-01-01",
-                PublicProfile: true
+                PublicProfile: true  // Boolean true
             };
             
             fetch('index.php?request=api/Account/TestData', {
@@ -75,7 +93,7 @@
             formData.append('UserLocation', 'Test Location FormData');
             formData.append('PhoneNumber', '123456789');
             formData.append('Bday', '1990-01-01');
-            formData.append('PublicProfile', '1');
+            formData.append('PublicProfile', '1');  // String "1"
             
             fetch('index.php?request=api/Account/TestData', {
                 method: 'POST',
@@ -89,6 +107,88 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('FormData test failed - check console');
+            });
+        }
+        
+        function testJsonFetchFalse() {
+            const data = {
+                Name: "Test Name JSON False",
+                Email: "testjsonfalse@example.com",
+                Nick: "testnickjsonfalse",
+                PublicProfile: false  // Boolean false
+            };
+            
+            fetch('index.php?request=api/Account/TestData', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('JSON False Response:', data);
+                alert('JSON false test completed - check console');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('JSON false test failed - check console');
+            });
+        }
+        
+        function testFormDataPatchFetch() {
+            const formData = new FormData();
+            formData.append('Name', 'Test Name FormData PATCH');
+            formData.append('Email', 'testformdatapatch@example.com');
+            formData.append('Nick', 'testnickformdatapatch');
+            formData.append('Surname1', 'TestSurname1FormDataPatch');
+            formData.append('Surname2', 'TestSurname2FormDataPatch');
+            formData.append('About', 'Test about text FormData PATCH');
+            formData.append('UserLocation', 'Test Location FormData PATCH');
+            formData.append('PhoneNumber', '123456789');
+            formData.append('Bday', '1990-01-01');
+            formData.append('PublicProfile', '1');  // String "1"
+            
+            fetch('index.php?request=api/Account/TestData', {
+                method: 'PATCH',  // ¡PATCH en vez de POST!
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('FormData PATCH Response:', data);
+                alert('FormData PATCH test completed - check console');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('FormData PATCH test failed - check console');
+            });
+        }
+        
+        function testUpdateProfilePatch() {
+            const formData = new FormData();
+            formData.append('Name', 'Test Update Name');
+            formData.append('Email', 'testupdate@example.com');
+            formData.append('Nick', 'testupdatenick');
+            formData.append('Surname1', 'TestUpdateSurname1');
+            formData.append('Surname2', 'TestUpdateSurname2');
+            formData.append('About', 'Test update about text');
+            formData.append('UserLocation', 'Test Update Location');
+            formData.append('PhoneNumber', '987654321');
+            formData.append('Bday', '1985-06-15');
+            formData.append('PublicProfile', '1');
+            
+            fetch('index.php?request=api/Account/Update', {
+                method: 'PATCH',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Update Profile PATCH Response:', data);
+                alert('Update Profile PATCH test completed - check console');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Update Profile PATCH test failed - check console');
             });
         }
     </script>

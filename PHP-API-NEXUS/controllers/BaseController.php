@@ -70,7 +70,7 @@ abstract class BaseController {
     
     /**
      * Obtiene datos de la request (JSON o multipart/form-data)
-     * Método universal que maneja ambos formatos
+     * Método universal que maneja ambos formatos y todos los métodos HTTP
      */
     protected function getRequestData() {
         static $cachedData = null;
@@ -92,14 +92,28 @@ abstract class BaseController {
         error_log("BaseController DEBUG: Method = '$requestMethod'");
         error_log("BaseController DEBUG: POST = " . json_encode($_POST));
         
-        // Detectar si es multipart/form-data o POST normal
+        // Detectar si es multipart/form-data o form-urlencoded
         $isMultipart = strpos(strtolower($contentType), 'multipart/form-data') !== false;
         $isFormUrlEncoded = strpos(strtolower($contentType), 'application/x-www-form-urlencoded') !== false;
         
-        if ($isMultipart || $isFormUrlEncoded || !empty($_POST)) {
-            // Datos enviados como multipart/form-data o application/x-www-form-urlencoded
+        if ($isMultipart) {
+            error_log("BaseController DEBUG: Detected multipart/form-data");
+            
+            // Para PATCH, PUT, etc. con multipart, tenemos que parsear php://input manualmente
+            if ($requestMethod !== 'POST' || empty($_POST)) {
+                error_log("BaseController DEBUG: Method is $requestMethod, parsing multipart manually");
+                $data = $this->parseMultipartFormData();
+            } else {
+                // Para POST normal, usar $_POST
+                $data = $_POST;
+                error_log("BaseController DEBUG: Using $_POST for POST method");
+            }
+            
+        } elseif ($isFormUrlEncoded && !empty($_POST)) {
+            // Datos enviados como application/x-www-form-urlencoded
             $data = $_POST;
-            error_log("BaseController DEBUG: Using POST data (multipart/form-encoded)");
+            error_log("BaseController DEBUG: Using POST data (form-urlencoded)");
+            
         } else {
             // Intentar leer JSON desde php://input
             $jsonInput = file_get_contents('php://input');
@@ -122,6 +136,58 @@ abstract class BaseController {
         
         error_log("BaseController DEBUG: Final data = " . json_encode($data));
         
+        return $data;
+    }
+    
+    /**
+     * Parsea multipart/form-data desde php://input para métodos no-POST
+     */
+    private function parseMultipartFormData() {
+        $input = file_get_contents('php://input');
+        $data = [];
+        
+        if (empty($input)) {
+            error_log("BaseController DEBUG: Empty php://input for multipart");
+            return $data;
+        }
+        
+        // Obtener el boundary del Content-Type
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        preg_match('/boundary=(.+)$/', $contentType, $matches);
+        
+        if (empty($matches[1])) {
+            error_log("BaseController DEBUG: No boundary found in Content-Type");
+            return $data;
+        }
+        
+        $boundary = '--' . $matches[1];
+        error_log("BaseController DEBUG: Found boundary: $boundary");
+        
+        // Dividir por boundary
+        $parts = explode($boundary, $input);
+        
+        foreach ($parts as $part) {
+            $part = trim($part);
+            if (empty($part) || $part === '--') continue;
+            
+            // Separar headers y contenido
+            if (strpos($part, "\r\n\r\n") !== false) {
+                list($headers, $content) = explode("\r\n\r\n", $part, 2);
+            } elseif (strpos($part, "\n\n") !== false) {
+                list($headers, $content) = explode("\n\n", $part, 2);
+            } else {
+                continue;
+            }
+            
+            // Extraer el nombre del campo
+            if (preg_match('/name="([^"]*)"/', $headers, $nameMatch)) {
+                $fieldName = $nameMatch[1];
+                $data[$fieldName] = rtrim($content, "\r\n");
+                error_log("BaseController DEBUG: Parsed field '$fieldName' = '" . $data[$fieldName] . "'");
+            }
+        }
+        
+        error_log("BaseController DEBUG: Parsed multipart data: " . json_encode($data));
         return $data;
     }
     
