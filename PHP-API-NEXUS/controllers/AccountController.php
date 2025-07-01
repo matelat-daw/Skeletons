@@ -8,17 +8,20 @@ class AccountController extends BaseController {
     private $userRepository;
     private $favorites;
     private $comments;
+    private $constellations;
     
     public function __construct() {
         parent::__construct();
         require_once 'models/UserRepository.php';
         require_once 'models/Favorites.php';
         require_once 'models/Comments.php';
+        require_once 'models/Constellation.php';
         
-        // Usar la base de datos NexusUsers para todas las operaciones de cuenta
+        // Usar las bases de datos correspondientes
         $this->userRepository = new UserRepository($this->dbManager->getConnection('NexusUsers'));
         $this->favorites = new Favorites($this->dbManager->getConnection('NexusUsers'));
         $this->comments = new Comments($this->dbManager->getConnection('NexusUsers'));
+        $this->constellations = new Constellation($this->dbManager->getConnection('nexus_stars'));
     }
     
     /**
@@ -44,11 +47,17 @@ class AccountController extends BaseController {
             try {
                 $favoritesData = $this->favorites->getUserFavorites($userId);
                 foreach ($favoritesData as $fav) {
-                    $userFavorites[] = [
-                        'id' => $fav['ConstellationId'],
-                        'name' => $fav['ConstellationName'] ?? '',
-                        'english_name' => $fav['ConstellationName'] ?? ''
-                    ];
+                    // Obtener información completa de la constelación desde nexus_stars
+                    $constellation = $this->constellations->getById($fav['ConstellationId']);
+                    if ($constellation) {
+                        $userFavorites[] = [
+                            'id' => intval($fav['ConstellationId']),
+                            'latin_name' => $constellation['latin_name'] ?? '',
+                            'english_name' => $constellation['english_name'] ?? '',
+                            'mythology' => $constellation['mythology'] ?? '',
+                            'image_url' => $constellation['image_url'] ?? ''
+                        ];
+                    }
                 }
             } catch (Exception $e) {
                 error_log("Error obteniendo favoritos: " . $e->getMessage());
@@ -245,6 +254,15 @@ class AccountController extends BaseController {
             $user->phoneNumber = isset($data['PhoneNumber']) ? $this->sanitizeString($data['PhoneNumber']) : '';
             $user->userLocation = isset($data['UserLocation']) ? $this->sanitizeString($data['UserLocation']) : '';
             $user->about = isset($data['About']) ? $this->sanitizeString($data['About']) : '';
+            
+            // Manejar imagen de perfil - usar imagen por defecto si no existe o está vacía
+            if (isset($data['ProfileImage']) && !empty(trim($data['ProfileImage']))) {
+                $user->profileImage = $this->sanitizeString($data['ProfileImage']);
+            } elseif (empty($user->profileImage)) {
+                // Si no tiene imagen actualmente, asignar la por defecto
+                $user->profileImage = 'https://88.24.26.59/imgs/default-profile.jpg';
+            }
+            // Si ya tiene una imagen y no se envía nueva, mantener la actual
             
             // Manejar PublicProfile de forma robusta (string "1"/"0", boolean true/false, checkbox presente/ausente)
             if (isset($data['PublicProfile'])) {

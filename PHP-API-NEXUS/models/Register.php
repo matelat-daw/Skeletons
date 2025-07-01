@@ -271,6 +271,7 @@ class Register {
             'Surname2' => $this->surname2,
             'PhoneNumber' => $this->phoneNumber,
             'Bday' => $this->bday,
+            'ProfileImage' => !empty($this->profileImageFile) ? $this->profileImageFile : 'https://88.24.26.59/imgs/default-profile.jpg',
             'About' => $this->about,
             'UserLocation' => $this->userLocation,
             'PublicProfile' => $this->publicProfile === 'true' || $this->publicProfile === true,

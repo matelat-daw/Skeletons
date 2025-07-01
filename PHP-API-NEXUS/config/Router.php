@@ -42,6 +42,7 @@ class Router {
         // Rutas de Cuenta/Perfil
         $this->addRoute('GET', '/api/Account/Profile', 'AccountController', 'getProfile');
         $this->addRoute('GET', '/api/Account/GetComments/{id}', 'AccountController', 'getComments');
+        $this->addRoute('POST', '/api/Account/Comments', 'CommentsController', 'postComment'); // Crear comentario
         $this->addRoute('POST', '/api/Account/Logout', 'AccountController', 'logout');
         $this->addRoute('PATCH', '/api/Account/Update', 'AccountController', 'updateProfile');
         $this->addRoute('DELETE', '/api/Account/Delete', 'AccountController', 'deleteAccount');
@@ -49,6 +50,7 @@ class Router {
         // RUTA DE TEST TEMPORAL - ELIMINAR DESPUÉS
         $this->addRoute('POST', '/api/Account/TestData', 'AccountController', 'testDataReceive');
         $this->addRoute('PATCH', '/api/Account/TestData', 'AccountController', 'testDataReceive');
+        $this->addRoute('GET', '/api/Debug/Routes', 'AccountController', 'debugRoutes'); // DEBUG TEMPORAL
         
         // Rutas de Favoritos
         $this->addRoute('GET', '/api/Account/Favorites', 'FavoritesController', 'getUserFavorites');

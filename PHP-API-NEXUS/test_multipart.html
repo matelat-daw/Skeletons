@@ -40,6 +40,12 @@
     
     <hr>
     
+    <h2>Test de Comentarios</h2>
+    <button onclick="testCreateComment()">Test Create Comment (POST)</button>
+    <button onclick="testGetComments()">Test Get Comments (GET)</button>
+    
+    <hr>
+    
     <h2>Test con JavaScript Fetch (FormData)</h2>
     <button onclick="testFormDataFetch()">Send FormData (POST method)</button>
     <button onclick="testFormDataPatchFetch()">Send FormData (PATCH method)</button>
@@ -325,6 +331,7 @@
                 About: "Test user about",
                 UserLocation: "Test Location",
                 PublicProfile: true
+                // NO incluir ProfileImage para probar la imagen por defecto
             };
             
             console.log('Sending register data:', data);
@@ -340,7 +347,10 @@
             .then(data => {
                 console.log('Register Response:', data);
                 if (data.success) {
-                    alert('¡Registro exitoso! Usuario creado correctamente. Check console for details.');
+                    alert('¡Registro exitoso! Usuario creado con imagen por defecto. Check console for details.');
+                    if (data.data && data.data.user) {
+                        console.log('User profileImage:', data.data.user.profileImage || 'not included in response');
+                    }
                 } else {
                     alert('Error en registro: ' + data.message + '\nErrors: ' + JSON.stringify(data.data?.errors || []));
                 }
@@ -385,6 +395,57 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error en registro FormData - check console');
+            });
+        }
+        
+        function testCreateComment() {
+            const commentData = {
+                constellationId: 1, // ID de constelación de prueba
+                comment: "Este es un comentario de prueba desde el navegador"
+            };
+            
+            console.log('Sending comment data:', commentData);
+            
+            fetch('index.php?request=api/Account/Comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(commentData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Create Comment Response:', data);
+                if (data.success) {
+                    alert('¡Comentario creado exitosamente! Check console for details.');
+                } else {
+                    alert('Error creando comentario: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error creando comentario - check console');
+            });
+        }
+        
+        function testGetComments() {
+            const constellationId = 1; // ID de constelación de prueba
+            
+            fetch(`index.php?request=api/Account/GetComments/${constellationId}`, {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Get Comments Response:', data);
+                if (data.success) {
+                    alert(`Comentarios obtenidos: ${data.data.length} comentarios encontrados. Check console for details.`);
+                } else {
+                    alert('Error obteniendo comentarios: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error obteniendo comentarios - check console');
             });
         }
     </script>

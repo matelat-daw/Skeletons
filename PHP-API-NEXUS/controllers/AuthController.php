@@ -181,6 +181,7 @@ class AuthController extends BaseController {
                             'email' => $user->email,
                             'name' => $user->name,
                             'surname1' => $user->surname1,
+                            'profileImage' => $user->profileImage,
                             'emailConfirmed' => false
                         ],
                         'emailSent' => $emailResult['success']

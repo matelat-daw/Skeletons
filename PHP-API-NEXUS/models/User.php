@@ -64,7 +64,7 @@ class User {
         $this->surname1 = $data['Surname1'] ?? $data['surname1'] ?? null;
         $this->surname2 = $data['Surname2'] ?? $data['surname2'] ?? null;
         $this->bday = $data['Bday'] ?? $data['bday'] ?? $data['birthday'] ?? null;
-        $this->profileImage = $data['ProfileImage'] ?? $data['profileImage'] ?? $data['profile_image'] ?? null;
+        $this->profileImage = $data['ProfileImage'] ?? $data['profileImage'] ?? $data['profile_image'] ?? 'https://88.24.26.59/imgs/default-profile.jpg';
         $this->about = $data['About'] ?? $data['about'] ?? null;
         $this->userLocation = $data['UserLocation'] ?? $data['userLocation'] ?? $data['user_location'] ?? null;
         $this->publicProfile = $data['PublicProfile'] ?? $data['publicProfile'] ?? $data['public_profile'] ?? true;

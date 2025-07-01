@@ -14,8 +14,7 @@ class Favorites {
 
     // Obtener todos los favoritos de un usuario
     public function getUserFavorites($userId) {
-        $query = "SELECT f.Id, f.UserId, f.ConstellationId, 
-                        CAST(f.ConstellationId AS varchar(50)) as ConstellationName
+        $query = "SELECT f.Id, f.UserId, f.ConstellationId
                   FROM " . $this->table_name . " f
                   WHERE f.UserId = :userId
                   ORDER BY f.ConstellationId";
