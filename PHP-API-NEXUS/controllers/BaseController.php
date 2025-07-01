@@ -69,6 +69,63 @@ abstract class BaseController {
     }
     
     /**
+     * Obtiene datos de la request (JSON o multipart/form-data)
+     * Método universal que maneja ambos formatos
+     */
+    protected function getRequestData() {
+        static $cachedData = null;
+        static $cached = false;
+        
+        // Usar caché para evitar múltiples lecturas de php://input
+        if ($cached) {
+            return $cachedData;
+        }
+        
+        $data = [];
+        
+        // Verificar el tipo de contenido
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        $requestMethod = $_SERVER['REQUEST_METHOD'] ?? '';
+        
+        // DEBUG TEMPORAL
+        error_log("BaseController DEBUG: Content-Type = '$contentType'");
+        error_log("BaseController DEBUG: Method = '$requestMethod'");
+        error_log("BaseController DEBUG: POST = " . json_encode($_POST));
+        
+        // Detectar si es multipart/form-data o POST normal
+        $isMultipart = strpos(strtolower($contentType), 'multipart/form-data') !== false;
+        $isFormUrlEncoded = strpos(strtolower($contentType), 'application/x-www-form-urlencoded') !== false;
+        
+        if ($isMultipart || $isFormUrlEncoded || !empty($_POST)) {
+            // Datos enviados como multipart/form-data o application/x-www-form-urlencoded
+            $data = $_POST;
+            error_log("BaseController DEBUG: Using POST data (multipart/form-encoded)");
+        } else {
+            // Intentar leer JSON desde php://input
+            $jsonInput = file_get_contents('php://input');
+            error_log("BaseController DEBUG: Raw input = '$jsonInput'");
+            
+            if (!empty($jsonInput)) {
+                $jsonData = json_decode($jsonInput, true);
+                if ($jsonData !== null && json_last_error() === JSON_ERROR_NONE) {
+                    $data = $jsonData;
+                    error_log("BaseController DEBUG: Using JSON data");
+                } else {
+                    error_log("BaseController DEBUG: JSON decode error: " . json_last_error_msg());
+                }
+            }
+        }
+        
+        // Cachear el resultado
+        $cachedData = $data;
+        $cached = true;
+        
+        error_log("BaseController DEBUG: Final data = " . json_encode($data));
+        
+        return $data;
+    }
+    
+    /**
      * Valida que los campos requeridos estén presentes
      */
     protected function validateRequired($data, $requiredFields) {

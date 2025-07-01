@@ -102,6 +102,30 @@ class UserRepository {
         return $result['count'] > 0;
     }
 
+    // Verificar si el email ya existe para otro usuario (excluye el usuario actual)
+    public function emailExistsForOtherUser($email, $currentUserId) {
+        $query = "SELECT COUNT(*) as count FROM " . $this->table_name . " WHERE Email = :email AND Id != :current_user_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":email", $email);
+        $stmt->bindParam(":current_user_id", $currentUserId);
+        $stmt->execute();
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['count'] > 0;
+    }
+
+    // Verificar si el nick ya existe para otro usuario (excluye el usuario actual)
+    public function nickExistsForOtherUser($nick, $currentUserId) {
+        $query = "SELECT COUNT(*) as count FROM " . $this->table_name . " WHERE Nick = :nick AND Id != :current_user_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":nick", $nick);
+        $stmt->bindParam(":current_user_id", $currentUserId);
+        $stmt->execute();
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['count'] > 0;
+    }
+
     // Crear nuevo usuario
     public function create(User $user) {
         $query = "INSERT INTO " . $this->table_name . " 
@@ -139,8 +163,8 @@ class UserRepository {
         $stmt->bindParam(":name", $user->name);
         $stmt->bindParam(":surname1", $user->surname1);
         $stmt->bindParam(":surname2", $user->surname2);
-        $stmt->bindParam(":phone_number", $user->phone_number);
-        $stmt->bindParam(":profile_image", $user->profile_image);
+        $stmt->bindParam(":phone_number", $user->phoneNumber);
+        $stmt->bindParam(":profile_image", $user->profileImage);
         $stmt->bindParam(":birthday", $birthday);
         $stmt->bindParam(":about", $user->about);
         $stmt->bindParam(":user_location", $user->userLocation);
@@ -170,14 +194,34 @@ class UserRepository {
         $stmt->bindParam(":name", $user->name);
         $stmt->bindParam(":surname1", $user->surname1);
         $stmt->bindParam(":surname2", $user->surname2);
-        $stmt->bindParam(":phone_number", $user->phone_number);
-        $stmt->bindParam(":profile_image", $user->profile_image);
+        $stmt->bindParam(":phone_number", $user->phoneNumber);
+        $stmt->bindParam(":profile_image", $user->profileImage);
         $stmt->bindParam(":birthday", $user->bday);
         $stmt->bindParam(":about", $user->about);
         $stmt->bindParam(":user_location", $user->userLocation);
         $stmt->bindParam(":public_profile", $user->publicProfile);
         $stmt->bindParam(":email_confirmed", $user->emailConfirmed);
 
+        return $stmt->execute();
+    }
+
+    // Actualizar email del usuario
+    public function updateEmail($userId, $email) {
+        $query = "UPDATE " . $this->table_name . " SET Email = :email, EmailConfirmed = 0 WHERE Id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":email", $email);
+        $stmt->bindParam(":id", $userId);
+        return $stmt->execute();
+    }
+
+    // Actualizar contraseña del usuario
+    public function updatePassword($userId, $passwordHash) {
+        $query = "UPDATE " . $this->table_name . " SET PasswordHash = :password_hash, SecurityStamp = :security_stamp WHERE Id = :id";
+        $stmt = $this->conn->prepare($query);
+        $newSecurityStamp = $this->generateGuid();
+        $stmt->bindParam(":password_hash", $passwordHash);
+        $stmt->bindParam(":security_stamp", $newSecurityStamp);
+        $stmt->bindParam(":id", $userId);
         return $stmt->execute();
     }
 

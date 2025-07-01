@@ -2,6 +2,7 @@
 /**
  * Comments Model - Modelo para comentarios de constelaciones
  * Compatible con ASP.NET Identity para NexusUsers
+ * Solo contiene propiedades y métodos básicos de acceso a datos
  */
 
 class Comments {
@@ -15,7 +16,6 @@ class Comments {
     public $comment;              // Comment (string?)
     public $user_id;              // UserId (string?)
     public $constellation_id;     // ConstellationId (int)
-    // User navigation property se maneja mediante joins en consultas ([JsonIgnore])
 
     public function __construct($db) {
         $this->conn = $db;
@@ -23,9 +23,8 @@ class Comments {
 
     /**
      * Obtener todos los comentarios de un usuario
-     * Compatible con ASP.NET: getUserComments()
      */
-    public function getUserComments($userId) {
+    public function findByUserId($userId) {
         $query = "SELECT c.Id, c.UserNick, c.ConstellationName, c.Comment, 
                         c.UserId, c.ConstellationId
                   FROM " . $this->table_name . " c
@@ -40,9 +39,8 @@ class Comments {
 
     /**
      * Obtener comentario por ID
-     * Compatible con ASP.NET: getById()
      */
-    public function getById($commentId) {
+    public function findById($commentId) {
         $query = "SELECT c.Id, c.UserNick, c.ConstellationName, c.Comment, 
                         c.UserId, c.ConstellationId
                   FROM " . $this->table_name . " c
@@ -52,26 +50,13 @@ class Comments {
         $stmt->bindParam(":commentId", $commentId);
         $stmt->execute();
         
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if($row) {
-            $this->id = $row['Id'];
-            $this->user_nick = $row['UserNick'];
-            $this->constellation_name = $row['ConstellationName'];
-            $this->comment = $row['Comment'];
-            $this->user_id = $row['UserId'];
-            $this->constellation_id = $row['ConstellationId'];
-            return true;
-        }
-        
-        return false;
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
      * Obtener comentarios por constelación
-     * Compatible con ASP.NET: getByConstellationId()
      */
-    public function getByConstellationId($constellationId) {
+    public function findByConstellationId($constellationId) {
         $query = "SELECT c.Id, c.UserNick, c.ConstellationName, c.Comment, 
                         c.UserId, c.ConstellationId
                   FROM " . $this->table_name . " c
@@ -85,57 +70,31 @@ class Comments {
     }
 
     /**
-     * Agregar un nuevo comentario
-     * Compatible con ASP.NET: addComment()
+     * Crear un nuevo comentario
      */
-    public function addComment($userId, $userNick, $commentText, $constellationId, $constellationName) {
-        // Validaciones equivalentes a DataAnnotations de ASP.NET
-        if (!$this->validateComment($commentText)) {
-            return false;
-        }
-
-        if (!$this->validateUserId($userId)) {
-            return false;
-        }
-
-        if (!$this->validateConstellationId($constellationId)) {
-            return false;
-        }
-
+    public function create($data) {
         $query = "INSERT INTO " . $this->table_name . " 
                   (UserNick, ConstellationName, Comment, UserId, ConstellationId) 
                   VALUES (:userNick, :constellationName, :comment, :userId, :constellationId)";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":userNick", $userNick);
-        $stmt->bindParam(":constellationName", $constellationName);
-        $stmt->bindParam(":comment", $commentText);
-        $stmt->bindParam(":userId", $userId);
-        $stmt->bindParam(":constellationId", $constellationId);
+        $stmt->bindParam(":userNick", $data['userNick']);
+        $stmt->bindParam(":constellationName", $data['constellationName']);
+        $stmt->bindParam(":comment", $data['comment']);
+        $stmt->bindParam(":userId", $data['userId']);
+        $stmt->bindParam(":constellationId", $data['constellationId']);
         
         if ($stmt->execute()) {
-            $this->id = $this->conn->lastInsertId();
-            $this->user_nick = $userNick;
-            $this->constellation_name = $constellationName;
-            $this->comment = $commentText;
-            $this->user_id = $userId;
-            $this->constellation_id = $constellationId;
-            return true;
+            return $this->conn->lastInsertId();
         }
         
         return false;
     }
 
     /**
-     * Actualizar un comentario existente
-     * Compatible con ASP.NET: updateComment()
+     * Actualizar un comentario
      */
-    public function updateComment($commentId, $userId, $newComment) {
-        // Validaciones equivalentes a DataAnnotations de ASP.NET
-        if (!$this->validateComment($newComment)) {
-            return false;
-        }
-
+    public function update($commentId, $userId, $newComment) {
         $query = "UPDATE " . $this->table_name . " 
                   SET Comment = :comment 
                   WHERE Id = :commentId AND UserId = :userId";
@@ -150,9 +109,8 @@ class Comments {
 
     /**
      * Eliminar un comentario
-     * Compatible con ASP.NET: deleteComment()
      */
-    public function deleteComment($commentId, $userId) {
+    public function delete($commentId, $userId) {
         $query = "DELETE FROM " . $this->table_name . " 
                   WHERE Id = :commentId AND UserId = :userId";
         
@@ -165,7 +123,6 @@ class Comments {
 
     /**
      * Verificar si el usuario es propietario del comentario
-     * Compatible con ASP.NET: isOwner()
      */
     public function isOwner($commentId, $userId) {
         $query = "SELECT COUNT(*) as count FROM " . $this->table_name . " 
@@ -182,9 +139,8 @@ class Comments {
 
     /**
      * Obtener estadísticas de comentarios de un usuario
-     * Compatible con ASP.NET: getUserCommentsStats()
      */
-    public function getUserCommentsStats($userId) {
+    public function getUserStats($userId) {
         $query = "SELECT 
                     COUNT(*) as total_comments,
                     COUNT(DISTINCT ConstellationId) as unique_constellations
@@ -199,9 +155,8 @@ class Comments {
 
     /**
      * Eliminar todos los comentarios de un usuario
-     * Compatible con ASP.NET: clearUserComments()
      */
-    public function clearUserComments($userId) {
+    public function deleteByUserId($userId) {
         $query = "DELETE FROM " . $this->table_name . " WHERE UserId = :userId";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":userId", $userId);
@@ -210,9 +165,8 @@ class Comments {
 
     /**
      * Obtener comentarios recientes
-     * Compatible con ASP.NET: getRecentComments()
      */
-    public function getRecentComments($limit = 10) {
+    public function findRecent($limit = 10) {
         $query = "SELECT c.Id, c.UserNick, c.ConstellationName, c.Comment, 
                         c.UserId, c.ConstellationId
                   FROM " . $this->table_name . " c
@@ -227,9 +181,8 @@ class Comments {
 
     /**
      * Obtener todos los comentarios
-     * Compatible con ASP.NET: GetAllComments()
      */
-    public function getAllComments() {
+    public function findAll() {
         $query = "SELECT c.Id, c.UserNick, c.ConstellationName, c.Comment, 
                         c.UserId, c.ConstellationId
                   FROM " . $this->table_name . " c
@@ -240,55 +193,8 @@ class Comments {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // ===============================
-    // MÉTODOS DE VALIDACIÓN
-    // Equivalentes a DataAnnotations de ASP.NET
-    // ===============================
-
-    /**
-     * Validar comentario - Equivalente a [Required] y [StringLength] de ASP.NET
-     */
-    private function validateComment($comment) {
-        if (empty($comment) || trim($comment) === '') {
-            return false;
-        }
-        
-        // Longitud máxima (equivalente a StringLength de ASP.NET)
-        if (strlen($comment) > 1000) {
-            return false;
-        }
-        
-        return true;
-    }
-
-    /**
-     * Validar ID de usuario - Equivalente a [Required] de ASP.NET
-     */
-    private function validateUserId($userId) {
-        return !empty($userId) && is_string($userId);
-    }
-
-    /**
-     * Validar ID de constelación - Equivalente a [Required] de ASP.NET
-     */
-    private function validateConstellationId($constellationId) {
-        return !empty($constellationId) && (is_numeric($constellationId) || is_int($constellationId));
-    }
-
-    /**
-     * Sanitizar texto del comentario
-     * Equivalente a la validación de entrada de ASP.NET
-     */
-    public function sanitizeComment($comment) {
-        // Limpiar HTML y caracteres especiales
-        $comment = htmlspecialchars($comment, ENT_QUOTES, 'UTF-8');
-        $comment = trim($comment);
-        return $comment;
-    }
-
     /**
      * Convertir a array para JSON
-     * Equivalente a los DTOs de ASP.NET
      */
     public function toArray() {
         return [
@@ -299,14 +205,6 @@ class Comments {
             'userId' => $this->user_id,
             'constellationId' => $this->constellation_id
         ];
-    }
-
-    /**
-     * Logging seguro sin información sensible
-     * Equivalente al logging de ASP.NET
-     */
-    public function toLogString() {
-        return "Comment[Id: {$this->id}, UserId: {$this->user_id}, ConstellationId: {$this->constellation_id}]";
     }
 }
 ?>

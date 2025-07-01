@@ -32,7 +32,7 @@ class CommentsController extends BaseController {
             $tokenData = $this->requireAuth();
             
             // Obtener todos los comentarios
-            $comments = $this->commentsRepository->getAllComments();
+            $comments = $this->commentsRepository->findAll();
             
             // Formatear para respuesta JSON
             $formattedComments = array_map(function($comment) {
@@ -71,7 +71,7 @@ class CommentsController extends BaseController {
             $commentId = intval($params['id']);
             
             // Buscar comentario por ID
-            $comment = $this->commentsRepository->getById($commentId);
+            $comment = $this->commentsRepository->findById($commentId);
             
             if (!$comment) {
                 $this->sendResponse(404, "Comentario no encontrado", null, false);
@@ -112,7 +112,7 @@ class CommentsController extends BaseController {
             $userId = $params['userId'];
             
             // Obtener comentarios del usuario
-            $comments = $this->commentsRepository->getUserComments($userId);
+            $comments = $this->commentsRepository->findByUserId($userId);
             
             if (empty($comments)) {
                 $this->sendResponse(404, "No se encontraron comentarios para este usuario", null, false);
@@ -155,8 +155,8 @@ class CommentsController extends BaseController {
             
             $commentId = intval($params['id']);
             
-            // Obtener datos del cuerpo de la petición
-            $input = $this->getJsonInput();
+            // Obtener datos del cuerpo de la petición (JSON o multipart/form-data)
+            $input = $this->getRequestData();
             if (!$input) {
                 $this->sendResponse(400, "Datos de comentario requeridos", null, false);
                 return;
@@ -185,7 +185,17 @@ class CommentsController extends BaseController {
                 'userNick' => $input['userNick'] ?? $existingComment['UserNick']
             ];
             
-            if ($this->commentsRepository->updateComment($commentId, $updateData['userId'], $updateData['comment'])) {
+            // Validar comentario
+            $commentValidation = $this->validateComment($updateData['comment']);
+            if (!$commentValidation['valid']) {
+                $this->sendResponse(400, $commentValidation['message'], null, false);
+                return;
+            }
+            
+            // Sanitizar comentario
+            $updateData['comment'] = $this->sanitizeComment($updateData['comment']);
+            
+            if ($this->commentsRepository->update($commentId, $updateData['userId'], $updateData['comment'])) {
                 // Respuesta 204 No Content como en ASP.NET
                 http_response_code(204);
                 exit();
@@ -216,8 +226,8 @@ class CommentsController extends BaseController {
                 return;
             }
             
-            // Obtener datos del comentario
-            $input = $this->getJsonInput();
+            // Obtener datos del comentario (JSON o multipart/form-data)
+            $input = $this->getRequestData();
             if (!$input) {
                 $this->sendResponse(400, "Datos de comentario requeridos", null, false);
                 return;
@@ -229,6 +239,26 @@ class CommentsController extends BaseController {
             }
             
             $constellationId = intval($input['constellationId']);
+            $commentText = $input['comment'] ?? '';
+            
+            // Validaciones usando métodos del controlador
+            $commentValidation = $this->validateComment($commentText);
+            if (!$commentValidation['valid']) {
+                $this->sendResponse(400, $commentValidation['message'], null, false);
+                return;
+            }
+            
+            $userValidation = $this->validateUserId($currentUserId);
+            if (!$userValidation['valid']) {
+                $this->sendResponse(400, $userValidation['message'], null, false);
+                return;
+            }
+            
+            $constellationValidation = $this->validateConstellationId($constellationId);
+            if (!$constellationValidation['valid']) {
+                $this->sendResponse(400, $constellationValidation['message'], null, false);
+                return;
+            }
             
             // Verificar que la constelación existe (como en ASP.NET)
             $constellation = $this->constellationsRepository->getById($constellationId);
@@ -237,25 +267,22 @@ class CommentsController extends BaseController {
                 return;
             }
             
+            // Sanitizar comentario
+            $commentText = $this->sanitizeComment($commentText);
+            
             // Preparar datos del comentario
             $commentData = [
                 'userId' => $currentUserId,
-                'constellationId' => $constellationId,
+                'userNick' => $user->nick ?? $user->userName ?? 'Usuario',
                 'constellationName' => $constellation['latin_name'], // Como en ASP.NET
-                'comment' => $input['comment'] ?? '',
-                'userNick' => $user->nick ?? $user->userName ?? 'Usuario'
+                'comment' => $commentText,
+                'constellationId' => $constellationId
             ];
             
             // Crear el comentario
-            if ($this->commentsRepository->addComment(
-                $commentData['userId'],
-                $commentData['userNick'],
-                $commentData['comment'],
-                $commentData['constellationId'],
-                $commentData['constellationName']
-            )) {
-                $newCommentId = $this->commentsRepository->id;
-                
+            $newCommentId = $this->commentsRepository->create($commentData);
+            
+            if ($newCommentId) {
                 // Respuesta CreatedAtAction como en ASP.NET
                 $responseData = [
                     "id" => intval($newCommentId),
@@ -309,7 +336,7 @@ class CommentsController extends BaseController {
             }
             
             // Eliminar el comentario
-            if ($this->commentsRepository->deleteComment($commentId, $currentUserId)) {
+            if ($this->commentsRepository->delete($commentId, $currentUserId)) {
                 // Respuesta 204 No Content como en ASP.NET
                 http_response_code(204);
                 exit();
@@ -329,8 +356,7 @@ class CommentsController extends BaseController {
      */
     public function getCommentsByConstellation($params = []) {
         try {
-            // Requiere autenticación
-            $tokenData = $this->requireAuth();
+            // NO requiere autenticación - es público
             
             if (!isset($params['id'])) {
                 $this->sendResponse(400, "ID de constelación requerido", null, false);
@@ -339,8 +365,14 @@ class CommentsController extends BaseController {
             
             $constellationId = intval($params['id']);
             
+            // Validar que el ID sea válido
+            if ($constellationId <= 0) {
+                $this->sendResponse(400, "ID de constelación inválido", null, false);
+                return;
+            }
+            
             // Obtener comentarios de la constelación
-            $comments = $this->commentsRepository->getByConstellationId($constellationId);
+            $comments = $this->commentsRepository->findByConstellationId($constellationId);
             
             // Formatear para respuesta JSON
             $formattedComments = array_map(function($comment) {
@@ -359,6 +391,84 @@ class CommentsController extends BaseController {
         } catch (Exception $e) {
             error_log("Error en getCommentsByConstellation: " . $e->getMessage());
             $this->sendResponse(500, "Error interno del servidor", null, false);
+        }
+    }
+    
+    // ===============================
+    // MÉTODOS DE VALIDACIÓN Y LÓGICA DE NEGOCIO
+    // Movidos desde el modelo para separar responsabilidades
+    // ===============================
+    
+    /**
+     * Validar comentario - Equivalente a DataAnnotations de ASP.NET
+     */
+    private function validateComment($comment) {
+        if (empty($comment) || trim($comment) === '') {
+            return ['valid' => false, 'message' => 'El comentario no puede estar vacío'];
+        }
+        
+        // Longitud máxima (equivalente a StringLength de ASP.NET)
+        if (strlen($comment) > 1000) {
+            return ['valid' => false, 'message' => 'El comentario no puede exceder 1000 caracteres'];
+        }
+        
+        return ['valid' => true, 'message' => 'Válido'];
+    }
+    
+    /**
+     * Validar ID de usuario - Equivalente a [Required] de ASP.NET
+     */
+    private function validateUserId($userId) {
+        if (empty($userId) || !is_string($userId)) {
+            return ['valid' => false, 'message' => 'ID de usuario inválido'];
+        }
+        return ['valid' => true, 'message' => 'Válido'];
+    }
+    
+    /**
+     * Validar ID de constelación - Equivalente a [Required] de ASP.NET
+     */
+    private function validateConstellationId($constellationId) {
+        if (empty($constellationId) || (!is_numeric($constellationId) && !is_int($constellationId))) {
+            return ['valid' => false, 'message' => 'ID de constelación inválido'];
+        }
+        return ['valid' => true, 'message' => 'Válido'];
+    }
+    
+    /**
+     * Sanitizar texto del comentario
+     * Equivalente a la validación de entrada de ASP.NET
+     */
+    private function sanitizeComment($comment) {
+        // Limpiar HTML y caracteres especiales
+        $comment = htmlspecialchars($comment, ENT_QUOTES, 'UTF-8');
+        $comment = trim($comment);
+        return $comment;
+    }
+    
+    /**
+     * Validar que la constelación existe
+     */
+    private function validateConstellationExists($constellationId) {
+        try {
+            $constellation = $this->constellationsRepository->findById($constellationId);
+            return $constellation !== false;
+        } catch (Exception $e) {
+            error_log("Error validando constelación: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Validar que el usuario existe
+     */
+    private function validateUserExists($userId) {
+        try {
+            $user = $this->userRepository->findById($userId);
+            return $user !== false;
+        } catch (Exception $e) {
+            error_log("Error validando usuario: " . $e->getMessage());
+            return false;
         }
     }
 }

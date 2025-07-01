@@ -8,11 +8,7 @@ php_value error_log /tmp/php_api_errors.log
 # Configuración de charset
 AddDefaultCharset UTF-8
 
-# Manejar requests OPTIONS para CORS
-RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ cors-handler.php [L]
-
-# Routing principal - redirigir todas las rutas al index.php
+# Routing principal - redirigir todas las rutas al index.php (SIN headers CORS aquí)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [L,QSA]

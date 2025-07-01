@@ -41,9 +41,13 @@ class Router {
         
         // Rutas de Cuenta/Perfil
         $this->addRoute('GET', '/api/Account/Profile', 'AccountController', 'getProfile');
+        $this->addRoute('GET', '/api/Account/GetComments/{id}', 'AccountController', 'getComments');
         $this->addRoute('POST', '/api/Account/Logout', 'AccountController', 'logout');
         $this->addRoute('PATCH', '/api/Account/Update', 'AccountController', 'updateProfile');
         $this->addRoute('DELETE', '/api/Account/Delete', 'AccountController', 'deleteAccount');
+        
+        // RUTA DE TEST TEMPORAL - ELIMINAR DESPUÉS
+        $this->addRoute('POST', '/api/Account/TestData', 'AccountController', 'testDataReceive');
         
         // Rutas de Favoritos
         $this->addRoute('GET', '/api/Account/Favorites', 'FavoritesController', 'getUserFavorites');
@@ -56,13 +60,13 @@ class Router {
         $this->addRoute('GET', '/api/Comments', 'CommentsController', 'getAllComments');
         $this->addRoute('GET', '/api/Comments/ById/{id}', 'CommentsController', 'getCommentById');
         $this->addRoute('GET', '/api/Comments/User/{userId}', 'CommentsController', 'getCommentsByUser');
+        $this->addRoute('GET', '/api/Comments/Constellation/{id}', 'CommentsController', 'getCommentsByConstellation');
         $this->addRoute('PUT', '/api/Comments/{id}', 'CommentsController', 'putComment');
         $this->addRoute('POST', '/api/Comments', 'CommentsController', 'postComment');
         $this->addRoute('DELETE', '/api/Comments/{id}', 'CommentsController', 'deleteComment');
         
         // Rutas de Comentarios adicionales (mantenidas para compatibilidad)
         $this->addRoute('GET', '/api/Account/Comments', 'CommentsController', 'getCommentsByUser');
-        $this->addRoute('GET', '/api/Account/GetComments/{id}', 'CommentsController', 'getCommentsByConstellation');
     }
 
     /**
@@ -147,9 +151,17 @@ class Router {
         $method = $_SERVER['REQUEST_METHOD'];
         $currentPath = $this->getCurrentPath();
         
+        // Debug temporal - Log de la petición
+        error_log("ROUTER: Method=$method, Path='$currentPath', URI='" . $_SERVER['REQUEST_URI'] . "'");
+        
+        // NO manejar OPTIONS aquí - ya se maneja en index.php
+        // El Router solo maneja rutas normales (GET, POST, PUT, DELETE, PATCH)
+        
         // Buscar ruta coincidente
         foreach ($this->routes as $route) {
+            error_log("ROUTER: Checking route: {$route['method']} {$route['path']} vs $method $currentPath");
             if ($route['method'] === $method && preg_match($route['pattern'], $currentPath)) {
+                error_log("ROUTER: Route matched! Executing {$route['controller']}::{$route['action']}");
                 // Extraer parámetros de la URL
                 $params = $this->extractParams($route['path'], $currentPath);
                 
@@ -160,6 +172,7 @@ class Router {
         }
         
         // Si no se encuentra la ruta, devolver 404
+        error_log("ROUTER: No route found for $method $currentPath");
         $this->sendNotFound();
     }
 
@@ -193,12 +206,21 @@ class Router {
      * Envía respuesta 404
      */
     private function sendNotFound() {
+        // Debug temporal
+        error_log("404 - Path: " . $this->getCurrentPath() . " - Method: " . $_SERVER['REQUEST_METHOD']);
+        error_log("Origin: " . ($_SERVER['HTTP_ORIGIN'] ?? 'No origin'));
+        
         http_response_code(404);
         echo json_encode([
             'message' => 'Endpoint no encontrado',
             'success' => false,
             'path' => $this->getCurrentPath(),
-            'method' => $_SERVER['REQUEST_METHOD']
+            'method' => $_SERVER['REQUEST_METHOD'],
+            'debug' => [
+                'request_uri' => $_SERVER['REQUEST_URI'] ?? '',
+                'script_name' => $_SERVER['SCRIPT_NAME'] ?? '',
+                'origin' => $_SERVER['HTTP_ORIGIN'] ?? ''
+            ]
         ]);
     }
 

@@ -9,31 +9,26 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0); // Desactivado para producción
 header('Content-Type: application/json; charset=UTF-8');
 
-// Configuración CORS
+// Configuración CORS - ÚNICA FUENTE DE HEADERS
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-$allowedOrigins = [
-    'http://localhost:4200',
-    'http://localhost:8080',
-    'http://127.0.0.1:4200',
-    'http://127.0.0.1:8080',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000'
-];
 
-if (in_array($origin, $allowedOrigins)) {
+// Solo configurar Access-Control-Allow-Origin UNA VEZ
+if (!empty($origin)) {
     header("Access-Control-Allow-Origin: $origin");
-} else if (strpos($origin, 'localhost') !== false || strpos($origin, '127.0.0.1') !== false) {
-    header("Access-Control-Allow-Origin: $origin");
+} else {
+    header("Access-Control-Allow-Origin: *");
 }
 
+// Headers CORS complementarios (solo una vez)
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin");
 header("Access-Control-Max-Age: 86400");
 
-// Manejar preflight OPTIONS
+// Manejar preflight OPTIONS aquí (primera y única línea de defensa)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
+    echo json_encode(['success' => true, 'message' => 'CORS preflight handled']);
     exit();
 }
 

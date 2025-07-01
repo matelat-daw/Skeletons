@@ -30,8 +30,8 @@ class AuthController extends BaseController {
      */
     public function login($params = []) {
         try {
-            // Obtener datos de entrada
-            $input = $this->getJsonInput();
+            // Obtener datos de entrada (JSON o multipart/form-data)
+            $input = $this->getRequestData();
             
             if (!$input) {
                 $this->sendResponse(400, "Datos de entrada requeridos", null, false);
@@ -110,8 +110,8 @@ class AuthController extends BaseController {
      */
     public function register($params = []) {
         try {
-            // Obtener datos de entrada
-            $input = $this->getJsonInput();
+            // Obtener datos de entrada (JSON o multipart/form-data)
+            $input = $this->getRequestData();
             
             if (!$input) {
                 $this->sendResponse(400, "Datos de entrada requeridos", null, false);
@@ -302,8 +302,8 @@ class AuthController extends BaseController {
      */
     public function resendConfirmation($params = []) {
         try {
-            // Obtener datos de entrada
-            $input = $this->getJsonInput();
+            // Obtener datos de entrada (JSON o multipart/form-data)
+            $input = $this->getRequestData();
             
             if (!$input || empty($input['email'])) {
                 $this->sendResponse(400, "Email requerido", null, false);
@@ -364,8 +364,8 @@ class AuthController extends BaseController {
      */
     public function googleLogin($params = []) {
         try {
-            // Obtener datos de entrada
-            $input = $this->getJsonInput();
+            // Obtener datos de entrada (JSON o multipart/form-data)
+            $input = $this->getRequestData();
             
             if (!$input) {
                 $this->sendResponse(400, "Datos de entrada requeridos", null, false);
@@ -444,8 +444,8 @@ class AuthController extends BaseController {
      */
     public function externalLogin($params = []) {
         try {
-            // Obtener datos de entrada
-            $input = $this->getJsonInput();
+            // Obtener datos de entrada (JSON o multipart/form-data)
+            $input = $this->getRequestData();
             
             if (!$input) {
                 $this->sendResponse(400, "Datos de entrada requeridos", null, false);

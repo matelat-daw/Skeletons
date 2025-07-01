@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Multipart Form Data</title>
+</head>
+<body>
+    <h1>Test de Formulario Multipart</h1>
+    
+    <form action="index.php?request=api/Account/TestData" method="POST" enctype="multipart/form-data">
+        <label>Name: <input type="text" name="Name" value="Test Name" /></label><br><br>
+        <label>Email: <input type="email" name="Email" value="test@example.com" /></label><br><br>
+        <label>Nick: <input type="text" name="Nick" value="testnick" /></label><br><br>
+        <label>Surname1: <input type="text" name="Surname1" value="TestSurname1" /></label><br><br>
+        <label>Surname2: <input type="text" name="Surname2" value="TestSurname2" /></label><br><br>
+        <label>About: <textarea name="About">Test about text</textarea></label><br><br>
+        <label>UserLocation: <input type="text" name="UserLocation" value="Test Location" /></label><br><br>
+        <label>PhoneNumber: <input type="text" name="PhoneNumber" value="123456789" /></label><br><br>
+        <label>Bday: <input type="date" name="Bday" value="1990-01-01" /></label><br><br>
+        <label>PublicProfile: <input type="checkbox" name="PublicProfile" value="1" checked /></label><br><br>
+        
+        <input type="submit" value="Send Multipart Data" />
+    </form>
+    
+    <hr>
+    
+    <h2>Test con JavaScript Fetch (JSON)</h2>
+    <button onclick="testJsonFetch()">Send JSON Data</button>
+    
+    <hr>
+    
+    <h2>Test con JavaScript Fetch (FormData)</h2>
+    <button onclick="testFormDataFetch()">Send FormData</button>
+    
+    <script>
+        function testJsonFetch() {
+            const data = {
+                Name: "Test Name JSON",
+                Email: "testjson@example.com",
+                Nick: "testnickjson",
+                Surname1: "TestSurname1JSON",
+                Surname2: "TestSurname2JSON",
+                About: "Test about text JSON",
+                UserLocation: "Test Location JSON",
+                PhoneNumber: "123456789",
+                Bday: "1990-01-01",
+                PublicProfile: true
+            };
+            
+            fetch('index.php?request=api/Account/TestData', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('JSON Response:', data);
+                alert('JSON test completed - check console');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('JSON test failed - check console');
+            });
+        }
+        
+        function testFormDataFetch() {
+            const formData = new FormData();
+            formData.append('Name', 'Test Name FormData');
+            formData.append('Email', 'testformdata@example.com');
+            formData.append('Nick', 'testnickformdata');
+            formData.append('Surname1', 'TestSurname1FormData');
+            formData.append('Surname2', 'TestSurname2FormData');
+            formData.append('About', 'Test about text FormData');
+            formData.append('UserLocation', 'Test Location FormData');
+            formData.append('PhoneNumber', '123456789');
+            formData.append('Bday', '1990-01-01');
+            formData.append('PublicProfile', '1');
+            
+            fetch('index.php?request=api/Account/TestData', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('FormData Response:', data);
+                alert('FormData test completed - check console');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('FormData test failed - check console');
+            });
+        }
+    </script>
+</body>
+</html>
