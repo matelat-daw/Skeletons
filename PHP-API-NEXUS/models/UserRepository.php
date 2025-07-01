@@ -152,7 +152,7 @@ class UserRepository {
         $security_stamp = $this->generateGuid(); // Security stamp único
         
         // Si Bday está vacío, usar una fecha por defecto
-        $birthday = $user->birthday ?: '1900-01-01';
+        $birthday = $user->bday ?: '1900-01-01';
 
         $stmt->bindParam(":id", $user->id);
         $stmt->bindParam(":username", $user->nick);
@@ -204,7 +204,11 @@ class UserRepository {
         $stmt->bindParam(":surname2", $user->surname2);
         $stmt->bindParam(":phone_number", $user->phoneNumber);
         $stmt->bindParam(":profile_image", $user->profileImage);
-        $stmt->bindParam(":birthday", $user->bday);
+        
+        // Manejar fecha de nacimiento (puede ser null)
+        $bdayValue = $user->bday ?: null;
+        $stmt->bindParam(":birthday", $bdayValue);
+        
         $stmt->bindParam(":about", $user->about);
         $stmt->bindParam(":user_location", $user->userLocation);
         
@@ -216,7 +220,52 @@ class UserRepository {
         $emailConfirmedInt = $user->emailConfirmed ? 1 : 0;
         $stmt->bindParam(":email_confirmed", $emailConfirmedInt, PDO::PARAM_INT);
 
-        return $stmt->execute();
+        try {
+            error_log("UserRepository UPDATE: About to execute query for user ID: " . $user->id);
+            error_log("UserRepository UPDATE: Query values - Name: " . $user->name . ", Nick: " . $user->nick . ", Bday: " . ($bdayValue ?? 'null'));
+            
+            $result = $stmt->execute();
+            
+            error_log("UserRepository UPDATE: Query execution result: " . ($result ? 'TRUE' : 'FALSE'));
+            
+            if (!$result) {
+                $errorInfo = $stmt->errorInfo();
+                error_log("UserRepository UPDATE ERROR: " . json_encode($errorInfo));
+                error_log("UserRepository UPDATE ERROR Details - SQLSTATE: " . $errorInfo[0] . ", Code: " . $errorInfo[1] . ", Message: " . $errorInfo[2]);
+                return false;
+            } else {
+                $rowCount = $stmt->rowCount();
+                error_log("UserRepository UPDATE: Rows affected: " . $rowCount);
+                
+                // Considerar exitoso si la query se ejecutó correctamente, independientemente del rowCount
+                // rowCount = 0 puede significar que no hubo cambios, lo cual no es un error
+                if ($rowCount === 0) {
+                    error_log("UserRepository UPDATE INFO: No rows were updated (no changes detected or user not found)");
+                    
+                    // Verificar si el usuario existe para distinguir entre "no cambios" y "no existe"
+                    $checkQuery = "SELECT COUNT(*) as count FROM " . $this->table_name . " WHERE Id = :id";
+                    $checkStmt = $this->conn->prepare($checkQuery);
+                    $checkStmt->bindParam(":id", $user->id);
+                    $checkStmt->execute();
+                    $userExists = $checkStmt->fetch(PDO::FETCH_ASSOC)['count'] > 0;
+                    
+                    if (!$userExists) {
+                        error_log("UserRepository UPDATE ERROR: User with ID " . $user->id . " does not exist");
+                        return false;
+                    } else {
+                        error_log("UserRepository UPDATE INFO: User exists, but no changes were needed");
+                        return true; // No hay cambios, pero es exitoso
+                    }
+                }
+                
+                return true;
+            }
+        } catch (PDOException $e) {
+            error_log("UserRepository UPDATE EXCEPTION: " . $e->getMessage());
+            error_log("UserRepository UPDATE EXCEPTION Code: " . $e->getCode());
+            error_log("UserRepository UPDATE EXCEPTION File: " . $e->getFile() . " Line: " . $e->getLine());
+            return false;
+        }
     }
 
     // Actualizar email del usuario

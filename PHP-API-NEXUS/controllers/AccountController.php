@@ -266,24 +266,66 @@ class AccountController extends BaseController {
             
             // Manejar fecha de nacimiento
             if (isset($data['Bday']) && !empty($data['Bday'])) {
-                // Intentar diferentes formatos de fecha
-                $dateFormats = ['Y-m-d', 'm/d/Y', 'd/m/Y', 'Y-m-d H:i:s'];
-                $validDate = null;
+                error_log("UPDATE PROFILE: Processing Bday = '" . $data['Bday'] . "'");
                 
+                // Intentar diferentes formatos de fecha
+                $dateFormats = [
+                    'Y-m-d',           // 2024-12-31
+                    'd/m/Y',           // 31/12/2024
+                    'm/d/Y',           // 12/31/2024
+                    'Y-m-d H:i:s',     // 2024-12-31 00:00:00
+                    'd-m-Y',           // 31-12-2024
+                    'm-d-Y'            // 12-31-2024
+                ];
+                
+                $validDate = null;
+                $inputDate = trim($data['Bday']);
+                
+                // Intentar parsear con cada formato
                 foreach ($dateFormats as $format) {
-                    $dateTime = DateTime::createFromFormat($format, $data['Bday']);
-                    if ($dateTime && $dateTime->format($format) === $data['Bday']) {
-                        $validDate = $dateTime->format('Y-m-d'); // Convertir siempre a formato MySQL
-                        break;
+                    $dateTime = DateTime::createFromFormat($format, $inputDate);
+                    if ($dateTime !== false) {
+                        // Verificar que la fecha parseada coincida con el input
+                        $formattedBack = $dateTime->format($format);
+                        if ($formattedBack === $inputDate) {
+                            $validDate = $dateTime->format('Y-m-d'); // Formato MySQL
+                            error_log("UPDATE PROFILE: Date matched format '$format', converted to '$validDate'");
+                            break;
+                        }
+                    }
+                }
+                
+                // Si no se pudo parsear con formatos específicos, intentar con strtotime
+                if (!$validDate) {
+                    $timestamp = strtotime($inputDate);
+                    if ($timestamp !== false) {
+                        $validDate = date('Y-m-d', $timestamp);
+                        error_log("UPDATE PROFILE: Date parsed with strtotime, converted to '$validDate'");
                     }
                 }
                 
                 if ($validDate) {
-                    $user->bday = $validDate;
-                    error_log("UPDATE PROFILE: Date converted from '{$data['Bday']}' to '$validDate'");
+                    // Validar que la fecha sea razonable (no en el futuro, no demasiado antigua)
+                    $dateTime = new DateTime($validDate);
+                    $now = new DateTime();
+                    $minDate = new DateTime('1900-01-01');
+                    
+                    if ($dateTime <= $now && $dateTime >= $minDate) {
+                        $user->bday = $validDate;
+                        error_log("UPDATE PROFILE: Date successfully set to '$validDate'");
+                    } else {
+                        error_log("UPDATE PROFILE: Date '$validDate' is out of valid range");
+                        $this->sendResponse(400, "La fecha de nacimiento no es válida (debe estar entre 1900 y hoy)", null, false);
+                        return;
+                    }
                 } else {
-                    error_log("UPDATE PROFILE: Invalid date format: " . $data['Bday']);
+                    error_log("UPDATE PROFILE: Could not parse date format: " . $inputDate);
+                    $this->sendResponse(400, "Formato de fecha de nacimiento inválido. Use YYYY-MM-DD", null, false);
+                    return;
                 }
+            } else {
+                // Si no se proporciona fecha, mantener la existente
+                error_log("UPDATE PROFILE: No Bday provided, keeping existing value");
             }
             
             // Si el email cambió, actualizar y marcar como no confirmado
@@ -300,7 +342,20 @@ class AccountController extends BaseController {
             }
             
             // Actualizar perfil en base de datos
-            if ($this->userRepository->update($user)) {
+            error_log("UPDATE PROFILE: About to update user with bday = " . ($user->bday ?? 'null'));
+            error_log("UPDATE PROFILE: User data before update: " . json_encode([
+                'id' => $user->id,
+                'name' => $user->name,
+                'nick' => $user->nick,
+                'email' => $user->email,
+                'bday' => $user->bday,
+                'publicProfile' => $user->publicProfile
+            ]));
+            
+            $updateResult = $this->userRepository->update($user);
+            error_log("UPDATE PROFILE: UserRepository->update() returned: " . ($updateResult ? 'TRUE' : 'FALSE'));
+            
+            if ($updateResult) {
                 $responseMessage = "Perfil actualizado exitosamente";
                 
                 if ($passwordChanged && $emailChanged) {
@@ -311,9 +366,13 @@ class AccountController extends BaseController {
                     $responseMessage .= ". Email actualizado (requiere confirmación)";
                 }
                 
+                error_log("UPDATE PROFILE: Success - " . $responseMessage);
+                error_log("UPDATE PROFILE: Sending success response with status 200");
                 $this->sendResponse(200, $responseMessage, null, true);
             } else {
-                $this->sendResponse(500, "Error al actualizar perfil", null, false);
+                error_log("UPDATE PROFILE: Database update failed");
+                error_log("UPDATE PROFILE: Sending error response with status 500");
+                $this->sendResponse(500, "Error al actualizar perfil en la base de datos", null, false);
             }
             
         } catch (Exception $e) {

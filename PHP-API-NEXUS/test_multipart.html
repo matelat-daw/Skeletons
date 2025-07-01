@@ -48,6 +48,7 @@
     
     <h2>Test Específico para Update Profile (PATCH)</h2>
     <button onclick="testUpdateProfilePatch()">Test Update Profile (PATCH multipart)</button>
+    <button onclick="testUpdateProfileWithDifferentDateFormats()">Test Different Date Formats</button>
     
     <script>
         function testJsonFetch() {
@@ -174,7 +175,7 @@
             formData.append('About', 'Test update about text');
             formData.append('UserLocation', 'Test Update Location');
             formData.append('PhoneNumber', '987654321');
-            formData.append('Bday', '1985-06-15');
+            formData.append('Bday', '1985-06-15');  // Formato YYYY-MM-DD
             formData.append('PublicProfile', '1');
             
             fetch('index.php?request=api/Account/Update', {
@@ -184,12 +185,49 @@
             .then(response => response.json())
             .then(data => {
                 console.log('Update Profile PATCH Response:', data);
-                alert('Update Profile PATCH test completed - check console');
+                alert('Update Profile PATCH test completed - check console and logs');
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('Update Profile PATCH test failed - check console');
             });
+        }
+        
+        function testUpdateProfileWithDifferentDateFormats() {
+            const dateFormats = [
+                '1985-06-15',    // YYYY-MM-DD
+                '15/06/1985',    // DD/MM/YYYY
+                '06/15/1985',    // MM/DD/YYYY
+                '15-06-1985',    // DD-MM-YYYY
+                '06-15-1985'     // MM-DD-YYYY
+            ];
+            
+            dateFormats.forEach((dateFormat, index) => {
+                setTimeout(() => {
+                    const formData = new FormData();
+                    formData.append('Name', `Test Date Format ${index + 1}`);
+                    formData.append('Email', `testdate${index + 1}@example.com`);
+                    formData.append('Nick', `testdatenick${index + 1}`);
+                    formData.append('Bday', dateFormat);
+                    formData.append('PublicProfile', '1');
+                    
+                    console.log(`Testing date format: ${dateFormat}`);
+                    
+                    fetch('index.php?request=api/Account/TestData', {
+                        method: 'PATCH',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(`Date format ${dateFormat} response:`, data);
+                    })
+                    .catch(error => {
+                        console.error(`Error with date format ${dateFormat}:`, error);
+                    });
+                }, index * 1000); // Esperar 1 segundo entre cada test
+            });
+            
+            alert('Testing different date formats - check console for results');
         }
     </script>
 </body>

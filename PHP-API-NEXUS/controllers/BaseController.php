@@ -37,6 +37,9 @@ abstract class BaseController {
             $response['data'] = $data;
         }
         
+        // Log temporal para debugging
+        error_log("SEND RESPONSE: Status=$statusCode, Success=" . ($success ? 'true' : 'false') . ", Message='$message'");
+        
         echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         exit();
     }
