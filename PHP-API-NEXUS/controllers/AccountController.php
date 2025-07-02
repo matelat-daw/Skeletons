@@ -7,7 +7,7 @@ require_once 'BaseController.php';
 class AccountController extends BaseController {
     private $userRepository;
     private $favorites;
-    private $comments;
+    private $commentsRepository;
     private $constellations;
     
     public function __construct() {
@@ -457,7 +457,7 @@ class AccountController extends BaseController {
             
             // Buscar comentarios en la base de datos de usuarios por id de constelación
             // Equivalente a: context.Comments.Where(c => c.ConstellationId == id).ToListAsync()
-            $comments = $this->comments->findByConstellationId($constellationId);
+            $comments = $this->commentsRepository->findByConstellationId($constellationId);
             
             // Formatear respuesta igual que ASP.NET
             $formattedComments = array_map(function($comment) {

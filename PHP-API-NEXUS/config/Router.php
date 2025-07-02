@@ -43,6 +43,7 @@ class Router {
         $this->addRoute('GET', '/api/Account/Profile', 'AccountController', 'getProfile');
         $this->addRoute('GET', '/api/Account/GetComments/{id}', 'AccountController', 'getComments');
         $this->addRoute('POST', '/api/Account/Comments', 'CommentsController', 'postComment'); // Crear comentario
+        $this->addRoute('DELETE', '/api/Account/Comments/{id}', 'CommentsController', 'deleteComment'); // Eliminar comentario
         $this->addRoute('POST', '/api/Account/Logout', 'AccountController', 'logout');
         $this->addRoute('PATCH', '/api/Account/Update', 'AccountController', 'updateProfile');
         $this->addRoute('DELETE', '/api/Account/Delete', 'AccountController', 'deleteAccount');

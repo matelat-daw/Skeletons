@@ -329,7 +329,7 @@ class CommentsController extends BaseController {
             $commentId = intval($params['id']);
             
             // Buscar el comentario
-            $comment = $this->commentsRepository->getById($commentId);
+            $comment = $this->commentsRepository->findById($commentId);
             if (!$comment) {
                 $this->sendResponse(404, "Comentario no encontrado", null, false);
                 return;
@@ -337,9 +337,7 @@ class CommentsController extends BaseController {
             
             // Eliminar el comentario
             if ($this->commentsRepository->delete($commentId, $currentUserId)) {
-                // Respuesta 204 No Content como en ASP.NET
-                http_response_code(204);
-                exit();
+                $this->sendResponse(200, "Comentario eliminado exitosamente", null, true);
             } else {
                 $this->sendResponse(500, "Error al eliminar el comentario", null, false);
             }

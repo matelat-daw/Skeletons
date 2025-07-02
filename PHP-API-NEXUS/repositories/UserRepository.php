@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/User.php';
+require_once __DIR__ . '/../models/User.php';
 
 class UserRepository {
     private $conn;

@@ -93,7 +93,7 @@
             <p>No se ha encontrado la constelación</p>
         </div>
     }        
-    @if (stars().length != 0) {
+    @if (stars() && stars().length > 0) {
         <section class="stars-section">
             <h3>Estrellas conocidas asociadas</h3>
             <ul class="stars-list">
@@ -151,17 +151,21 @@
             }
             
             <div class="comments-container">
-                @for (comment of comments(); track comment.id) {
-                    <div class="comment-card">
-                        <div class="comment-header">
-                            <a [routerLink]="['/user', comment.userNick]" class="user-link">
-                                <h4>{{ comment.userNick }}</h4>
-                            </a>
+                @if (comments() && comments().length > 0) {
+                    @for (comment of comments(); track comment.id) {
+                        <div class="comment-card">
+                            <div class="comment-header">
+                                <a [routerLink]="['/user', comment.userNick]" class="user-link">
+                                    <h4>{{ comment.userNick }}</h4>
+                                </a>
+                            </div>
+                            <div class="comment-body">
+                                <p>{{ comment.comment }}</p>
+                            </div>
                         </div>
-                        <div class="comment-body">
-                            <p>{{ comment.comment }}</p>
-                        </div>
-                    </div>
+                    }
+                } @else {
+                    <p class="no-comments">No hay comentarios todavía. ¡Sé el primero en comentar!</p>
                 }
             </div>
         </section>

@@ -59,8 +59,8 @@ export class ConstellationComponent implements OnInit {
         this.constellationsService.getCommentsById(id)
       ]);
       this.constellation.set(constellations);
-      this.stars.set(stars);
-      this.comments.set(comments);
+      this.stars.set(Array.isArray(stars) ? stars : []);
+      this.comments.set(Array.isArray(comments) ? comments : []);
       
       // Verificar si la constelación está en favoritos
       if (this.isLogged()) {
@@ -156,7 +156,7 @@ export class ConstellationComponent implements OnInit {
       
       // Actualizar la lista de comentarios desde el servidor
       const updatedComments = await this.constellationsService.getCommentsById(constellationId);
-      this.comments.set(updatedComments);
+      this.comments.set(Array.isArray(updatedComments) ? updatedComments : []);
       
       this.snackBar.open('Comentario añadido correctamente', 'Cerrar', {
         duration: 3000
