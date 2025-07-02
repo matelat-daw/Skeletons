@@ -5,16 +5,16 @@
 require_once 'BaseController.php';
 
 class FavoritesController extends BaseController {
-    private $favorites;
+    private $favoritesRepository;
     private $constellation;
     
     public function __construct() {
         parent::__construct();
-        require_once 'models/Favorites.php';
+        require_once 'repositories/FavoritesRepository.php';
         require_once 'models/Constellation.php';
         
         // Usar NexusUsers para favoritos y nexus_stars para constelaciones
-        $this->favorites = new Favorites($this->dbManager->getConnection('NexusUsers'));
+        $this->favoritesRepository = new FavoritesRepository($this->dbManager->getConnection('NexusUsers'));
         $this->constellation = new Constellation($this->dbManager->getConnection('nexus_stars'));
     }
     
@@ -29,8 +29,8 @@ class FavoritesController extends BaseController {
             $userId = $tokenData['user_id'];
             
             // Obtener favoritos
-            $userFavorites = $this->favorites->getUserFavorites($userId);
-            $stats = $this->favorites->getUserFavoritesStats($userId);
+            $userFavorites = $this->favoritesRepository->getUserFavorites($userId);
+            $stats = $this->favoritesRepository->getUserFavoritesStats($userId);
             
             $this->sendResponse(200, "Favoritos obtenidos exitosamente", [
                 'favorites' => $userFavorites,
@@ -61,7 +61,7 @@ class FavoritesController extends BaseController {
             $constellationId = $this->validateId($params['id']);
             
             // Verificar si es favorito
-            $isFavorite = $this->favorites->isFavorite($userId, $constellationId);
+            $isFavorite = $this->favoritesRepository->isFavorite($userId, $constellationId);
             
             $this->sendResponse(200, $isFavorite ? "Es favorito" : "No es favorito", [
                 'isFavorite' => $isFavorite,
@@ -98,14 +98,15 @@ class FavoritesController extends BaseController {
             }
             
             // Verificar si ya es favorito
-            if ($this->favorites->isFavorite($userId, $constellationId)) {
+            if ($this->favoritesRepository->isFavorite($userId, $constellationId)) {
                 $this->sendResponse(409, "Esta constelación ya está en tus favoritos", null, false);
             }
             
             // Agregar a favoritos
-            if ($this->favorites->addFavorite($userId, $constellationId)) {
+            $newFavoriteId = $this->favoritesRepository->addFavorite($userId, $constellationId);
+            if ($newFavoriteId) {
                 $this->sendResponse(200, "Constelación agregada a favoritos", [
-                    'id' => $this->favorites->id,
+                    'id' => $newFavoriteId,
                     'userId' => $userId,
                     'constellationId' => $constellationId,
                     'constellationName' => $constellationData['english_name'] ?? 'Desconocida'
@@ -138,12 +139,12 @@ class FavoritesController extends BaseController {
             $constellationId = $this->validateId($params['id']);
             
             // Verificar si es favorito antes de eliminar
-            if (!$this->favorites->isFavorite($userId, $constellationId)) {
+            if (!$this->favoritesRepository->isFavorite($userId, $constellationId)) {
                 $this->sendResponse(404, "Favorito no encontrado", null, false);
             }
             
             // Eliminar de favoritos
-            if ($this->favorites->removeFavorite($userId, $constellationId)) {
+            if ($this->favoritesRepository->removeFavorite($userId, $constellationId)) {
                 $this->sendResponse(200, "Constelación eliminada de favoritos", null, true);
             } else {
                 $this->sendResponse(500, "Error al eliminar favorito", null, false);

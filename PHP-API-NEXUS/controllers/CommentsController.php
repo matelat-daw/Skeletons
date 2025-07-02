@@ -12,13 +12,13 @@ class CommentsController extends BaseController {
     
     public function __construct() {
         parent::__construct();
-        require_once 'models/UserRepository.php';
-        require_once 'models/Comments.php';
+        require_once 'repositories/UserRepository.php';
+        require_once 'repositories/CommentsRepository.php';
         require_once 'models/Constellation.php';
         
         // Usar las bases de datos correspondientes como en ASP.NET
         $this->userRepository = new UserRepository($this->dbManager->getConnection('NexusUsers'));
-        $this->commentsRepository = new Comments($this->dbManager->getConnection('NexusUsers'));
+        $this->commentsRepository = new CommentsRepository($this->dbManager->getConnection('NexusUsers'));
         $this->constellationsRepository = new Constellation($this->dbManager->getConnection('nexus_stars'));
     }
     

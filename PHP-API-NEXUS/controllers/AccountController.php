@@ -12,15 +12,15 @@ class AccountController extends BaseController {
     
     public function __construct() {
         parent::__construct();
-        require_once 'models/UserRepository.php';
-        require_once 'models/Favorites.php';
-        require_once 'models/Comments.php';
+        require_once 'repositories/UserRepository.php';
+        require_once 'repositories/FavoritesRepository.php';
+        require_once 'repositories/CommentsRepository.php';
         require_once 'models/Constellation.php';
         
         // Usar las bases de datos correspondientes
         $this->userRepository = new UserRepository($this->dbManager->getConnection('NexusUsers'));
-        $this->favorites = new Favorites($this->dbManager->getConnection('NexusUsers'));
-        $this->comments = new Comments($this->dbManager->getConnection('NexusUsers'));
+        $this->favorites = new FavoritesRepository($this->dbManager->getConnection('NexusUsers'));
+        $this->commentsRepository = new CommentsRepository($this->dbManager->getConnection('NexusUsers'));
         $this->constellations = new Constellation($this->dbManager->getConnection('nexus_stars'));
     }
     
@@ -66,7 +66,7 @@ class AccountController extends BaseController {
             // Obtener comentarios del usuario
             $userComments = [];
             try {
-                $commentsData = $this->comments->findByUserId($userId);
+                $commentsData = $this->commentsRepository->findByUserId($userId);
                 foreach ($commentsData as $comment) {
                     $userComments[] = [
                         'id' => intval($comment['Id']),

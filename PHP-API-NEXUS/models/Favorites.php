@@ -1,137 +1,60 @@
 <?php
+/**
+ * Modelo Favorites - Entidad de favorito (solo propiedades y conversiones)
+ * La lógica de acceso a datos está en FavoritesRepository
+ */
 class Favorites {
-    private $conn;
-    private $table_name = "Favorites";
-
     // Propiedades del favorito (coincidentes con el modelo ASP.NET)
     public $id;
     public $user_id;
     public $constellation_id;
 
-    public function __construct($db) {
-        $this->conn = $db;
-    }
-
-    // Obtener todos los favoritos de un usuario
-    public function getUserFavorites($userId) {
-        $query = "SELECT f.Id, f.UserId, f.ConstellationId
-                  FROM " . $this->table_name . " f
-                  WHERE f.UserId = :userId
-                  ORDER BY f.ConstellationId";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":userId", $userId);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    // Verificar si una constelación es favorita de un usuario
-    public function isFavorite($userId, $constellationId) {
-        $query = "SELECT COUNT(*) as count FROM " . $this->table_name . " 
-                  WHERE UserId = :userId AND ConstellationId = :constellationId";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":userId", $userId);
-        $stmt->bindParam(":constellationId", $constellationId);
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row['count'] > 0;
-    }
-
-    // Agregar una constelación a favoritos
-    public function addFavorite($userId, $constellationId) {
-        // Verificar si ya es favorito
-        if ($this->isFavorite($userId, $constellationId)) {
-            return false; // Ya es favorito
+    public function __construct($data = []) {
+        if (!empty($data)) {
+            $this->fillFromArray($data);
         }
-
-        $query = "INSERT INTO " . $this->table_name . " (UserId, ConstellationId) VALUES (:userId, :constellationId)";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":userId", $userId);
-        $stmt->bindParam(":constellationId", $constellationId);
-        
-        if ($stmt->execute()) {
-            $this->id = $this->conn->lastInsertId();
-            $this->user_id = $userId;
-            $this->constellation_id = $constellationId;
-            return true;
-        }
-        
-        return false;
     }
 
-    // Eliminar una constelación de favoritos
-    public function removeFavorite($userId, $constellationId) {
-        $query = "DELETE FROM " . $this->table_name . " 
-                  WHERE UserId = :userId AND ConstellationId = :constellationId";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":userId", $userId);
-        $stmt->bindParam(":constellationId", $constellationId);
-        return $stmt->execute();
+    /**
+     * Llenar propiedades desde array de datos
+     * @param array $data Datos del favorito
+     */
+    public function fillFromArray($data) {
+        $this->id = $data['Id'] ?? $data['id'] ?? null;
+        $this->user_id = $data['UserId'] ?? $data['user_id'] ?? null;
+        $this->constellation_id = $data['ConstellationId'] ?? $data['constellation_id'] ?? null;
     }
 
-    // Eliminar favorito por ID
-    public function removeById($favoriteId, $userId) {
-        $query = "DELETE FROM " . $this->table_name . " 
-                  WHERE Id = :favoriteId AND UserId = :userId";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":favoriteId", $favoriteId);
-        $stmt->bindParam(":userId", $userId);
-        return $stmt->execute();
+    /**
+     * Convertir a array para respuestas JSON
+     * @return array Datos del favorito
+     */
+    public function toArray() {
+        return [
+            'id' => $this->id,
+            'user_id' => $this->user_id,
+            'constellation_id' => $this->constellation_id
+        ];
     }
 
-    // Obtener favorito por ID
-    public function getById($favoriteId) {
-        $query = "SELECT f.Id, f.UserId, f.ConstellationId,
-                        CAST(f.ConstellationId AS varchar(50)) as ConstellationName
-                  FROM " . $this->table_name . " f
-                  WHERE f.Id = :favoriteId";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":favoriteId", $favoriteId);
-        $stmt->execute();
-        
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if($row) {
-            $this->id = $row['Id'];
-            $this->user_id = $row['UserId'];
-            $this->constellation_id = $row['ConstellationId'];
-            return true;
-        }
-        
-        return false;
+    /**
+     * Convertir a array para base de datos
+     * @return array Datos para inserción/actualización
+     */
+    public function toDatabaseArray() {
+        return [
+            'Id' => $this->id,
+            'UserId' => $this->user_id,
+            'ConstellationId' => $this->constellation_id
+        ];
     }
 
-    // Obtener estadísticas de favoritos de un usuario
-    public function getUserFavoritesStats($userId) {
-        $query = "SELECT 
-                    COUNT(*) as total_favorites,
-                    COUNT(DISTINCT f.ConstellationId) as unique_constellations
-                  FROM " . $this->table_name . " f
-                  WHERE f.UserId = :userId";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":userId", $userId);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    // Eliminar todos los favoritos de un usuario
-    public function clearUserFavorites($userId) {
-        $query = "DELETE FROM " . $this->table_name . " WHERE UserId = :userId";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":userId", $userId);
-        return $stmt->execute();
-    }
-
-    // Obtener las constelaciones más populares (más agregadas a favoritos)
-    public function getPopularConstellations($limit = 10) {
-        $query = "SELECT f.ConstellationId, COUNT(*) as favorite_count
-                  FROM " . $this->table_name . " f
-                  GROUP BY f.ConstellationId
-                  ORDER BY COUNT(*) DESC
-                  OFFSET 0 ROWS FETCH NEXT :limit ROWS ONLY";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":limit", $limit, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    /**
+     * Validar que el favorito tiene los datos mínimos requeridos
+     * @return bool True si es válido
+     */
+    public function isValid() {
+        return !empty($this->user_id) && !empty($this->constellation_id);
     }
 }
 ?>

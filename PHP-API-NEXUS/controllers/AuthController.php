@@ -11,7 +11,7 @@ class AuthController extends BaseController {
     
     public function __construct() {
         parent::__construct();
-        require_once 'models/UserRepository.php';
+        require_once 'repositories/UserRepository.php';
         require_once 'models/Login.php';
         require_once 'models/Register.php';
         require_once 'models/ExternalLogin.php'; // Nuevo modelo para login externo
