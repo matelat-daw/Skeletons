@@ -29,12 +29,25 @@
             @for (msg of errorMessages['global']; track msg) {
                 <span class="errorMessage errorMessageGlobal">{{msg}}</span>
             }
+            @if (loginError) {
+                <div class="errorMessage errorMessageGlobal">{{loginError}}</div>
+            }
+            
+            <!-- Debug info -->
+            <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 12px;">
+                <strong>Servidor actual:</strong> {{standaloneAuth.getCurrentUrl()}}<br>
+                <button type="button" (click)="toggleServer()" style="margin-top: 5px; padding: 5px 10px;">
+                    Cambiar a {{standaloneAuth.getCurrentUrl().includes('localhost') ? 'Ngrok' : 'Local'}}
+                </button>
+            </div>
+            
             <button type="submit">Entrar</button>
         </form>
-        <div class="login-container">
-                <h2>Iniciar Sesión</h2>
-                <asl-google-signin-button type="standard" size="large"></asl-google-signin-button>
-              </div>
+        
+        <div class="google-signin">
+            <asl-google-signin-button type="standard" size="large"></asl-google-signin-button>
+        </div>
+        
         <div class="redirect">
             <span>¿No tienes cuenta?</span><a routerLink="/register" class="link">Crear una</a>
         </div>

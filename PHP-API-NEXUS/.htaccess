@@ -8,6 +8,15 @@ php_value error_log /tmp/php_api_errors.log
 # Configuración de charset
 AddDefaultCharset UTF-8
 
+# PREVENIR que Apache agregue headers CORS automáticos
+<IfModule mod_headers.c>
+    # Desactivar cualquier header CORS que Apache pueda estar agregando
+    Header unset "Access-Control-Allow-Origin" env=!CORS_ENABLED
+    Header unset "Access-Control-Allow-Credentials" env=!CORS_ENABLED
+    Header unset "Access-Control-Allow-Methods" env=!CORS_ENABLED
+    Header unset "Access-Control-Allow-Headers" env=!CORS_ENABLED
+</IfModule>
+
 # Routing principal - redirigir todas las rutas al index.php (SIN headers CORS aquí)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

@@ -2,6 +2,7 @@ import { Comments } from "./comments";
 import { Constellation } from "./constellation";
 
 export interface User {
+    id?: number,  // Añadido como opcional para compatibilidad
     nick: string,
     name: string,
     surname1: string,

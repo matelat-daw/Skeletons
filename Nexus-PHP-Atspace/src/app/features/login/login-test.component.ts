@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth/auth.service';
 import { StandaloneAuthService } from '../../services/auth/standalone-auth.service';
@@ -6,7 +6,6 @@ import { Router, RouterLink } from '@angular/router';
 import { GoogleSigninButtonModule, SocialAuthService } from '@abacritt/angularx-social-login';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -15,17 +14,18 @@ import { firstValueFrom } from 'rxjs';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit  {
   loginError: string = '';
   isProcessingLogin: boolean = false;
+  useStandalone: boolean = true; // Flag para cambiar entre servicios
 
   constructor(
-    private authService: AuthService,
-    @Inject(StandaloneAuthService) private standaloneAuthService: StandaloneAuthService,
-    private authGoogle: SocialAuthService,
-    private router: Router,
+    private authService: AuthService, 
+    private standaloneAuthService: StandaloneAuthService,
+    private authGoogle: SocialAuthService, 
+    private router: Router, 
     private http: HttpClient
-  ) {}
+  ){}
 
   showPassword: boolean = false;
   errorMessages: { [key: string]: string[] } = {};
@@ -35,22 +35,20 @@ export class LoginComponent implements OnInit {
     password: new FormControl('test123'), // Prellenado para pruebas
   });
 
-  // Getter público para el template
-  get standaloneAuth() {
-    return this.standaloneAuthService;
-  }
-
   ngOnInit() {
-    if (this.standaloneAuthService.isAuthenticated()) {
+    const currentService = this.useStandalone ? this.standaloneAuthService : this.authService;
+    
+    if (currentService.isAuthenticated()) {
       this.router.navigate(['/profile']);
     }
+    
     this.authGoogle.authState.subscribe((user) => {
       if (user && !this.isProcessingLogin) {
         this.isProcessingLogin = true;
         this.verifyGoogleUserServerSide(user.idToken);
       }
     });
-}
+  }
 
   async verifyGoogleUserServerSide(token: string): Promise<void> {
       try {
@@ -74,24 +72,17 @@ export class LoginComponent implements OnInit {
     try {
       const { email, password } = this.form.value;
       
-      console.log('Usando servidor standalone para login');
-      
-      // Usar firstValueFrom en lugar de toPromise (deprecated)
-      const response = await firstValueFrom(this.standaloneAuthService.login(email!, password!));
-      console.log('Login exitoso con standalone:', response);
-      
-      // Verificar que el usuario esté autenticado
-      console.log('Usuario autenticado:', this.standaloneAuthService.isAuthenticated());
-      console.log('Usuario actual:', this.standaloneAuthService.getCurrentUser());
-      
-      // Intentar navegar al perfil
-      console.log('Intentando navegar a /profile...');
-      const navigationResult = await this.router.navigate(['/profile']);
-      console.log('Resultado de navegación:', navigationResult);
-      
-      if (!navigationResult) {
-        console.error('La navegación falló');
-        this.loginError = 'Login exitoso pero la navegación falló. Recarga la página.';
+      if (this.useStandalone) {
+        // Usar servidor standalone
+        console.log('Usando servidor standalone para login');
+        const response = await this.standaloneAuthService.login(email!, password!).toPromise();
+        console.log('Login exitoso con standalone:', response);
+        await this.router.navigate(['/profile']);
+      } else {
+        // Usar servidor Apache original
+        console.log('Usando servidor Apache para login');
+        await this.authService.login(email!, password!);
+        await this.router.navigate(['/profile']);
       }
     } catch (error: any) {
       console.error('Error en login:', error);
@@ -110,10 +101,10 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  toggleServer(): void {
-    const currentlyUsingNgrok = this.standaloneAuthService.getCurrentUrl().includes('ngrok');
-    this.standaloneAuthService.setUseNgrok(!currentlyUsingNgrok);
+  toggleService(): void {
+    this.useStandalone = !this.useStandalone;
     this.loginError = '';
     this.errorMessages = {};
+    console.log('Cambiado a:', this.useStandalone ? 'Servidor Standalone' : 'Servidor Apache');
   }
 }

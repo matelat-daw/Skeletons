@@ -213,6 +213,7 @@ class Router {
         // Debug temporal
         error_log("404 - Path: " . $this->getCurrentPath() . " - Method: " . $_SERVER['REQUEST_METHOD']);
         error_log("Origin: " . ($_SERVER['HTTP_ORIGIN'] ?? 'No origin'));
+        error_log("404 - Headers before response: " . json_encode(headers_list()));
         
         http_response_code(404);
         echo json_encode([

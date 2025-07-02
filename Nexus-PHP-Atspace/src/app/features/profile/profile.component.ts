@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { User } from '../../models/user';
 import { RouterLink, Router } from '@angular/router';
 import { UsersService } from '../../services/users/users.service';
@@ -18,6 +18,8 @@ import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { AuthService } from '../../services/auth/auth.service';
+import { StandaloneAuthService } from '../../services/auth/standalone-auth.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
@@ -41,7 +43,7 @@ import { AuthService } from '../../services/auth/auth.service';
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
-export class ProfileComponent {
+export class ProfileComponent implements OnInit {
   loading = signal(true);
   user = signal<User | null>(null);
   profileImage = signal('');
@@ -71,7 +73,8 @@ export class ProfileComponent {
     private snackBar: MatSnackBar,
     private router: Router,
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private standaloneAuthService: StandaloneAuthService
   ) {}
   // {this.profileImage = this.authService.profileImage;}
 
@@ -82,9 +85,45 @@ export class ProfileComponent {
   async onLoginSuccess() {
     this.loading.set(true);
     try {
-      const user = await this.usersService.getMyProfile();
-      this.user.set(user);
-      this.profileImage.set(user.profileImage);
+      console.log('ProfileComponent - Cargando perfil...');
+      
+      // Verificar si estamos usando el servidor standalone
+      if (this.standaloneAuthService.isAuthenticated()) {
+        console.log('ProfileComponent - Usando servidor standalone');
+        // Obtener el usuario del servicio standalone directamente
+        const user = this.standaloneAuthService.getCurrentUser();
+        if (user) {
+          // Convertir el usuario del standalone al formato esperado por el componente
+          const profileUser: User = {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            surname1: '',
+            surname2: '',
+            nick: user.email.split('@')[0], // Usar parte del email como nick
+            phoneNumber: '',
+            userLocation: '',
+            about: '',
+            bday: '1990-01-01', // Fecha por defecto como string
+            profileImage: 'assets/imgs/default-avatar.png',
+            publicProfile: true,
+            comments: [],
+            favorites: []
+          };
+          this.user.set(profileUser);
+          this.profileImage.set(profileUser.profileImage);
+          console.log('ProfileComponent - Usuario standalone cargado:', profileUser);
+        }
+      } else {
+        console.log('ProfileComponent - Usando servicio original');
+        // Usar el servicio original
+        const user = await this.usersService.getMyProfile();
+        this.user.set(user);
+        this.profileImage.set(user.profileImage);
+      }
+    } catch (error) {
+      console.error('ProfileComponent - Error cargando perfil:', error);
+      this.errorMessage.set('Error al cargar el perfil');
     } finally {
       this.loading.set(false);
     }
@@ -301,5 +340,40 @@ export class ProfileComponent {
 
   navigateToConstellation(constellationId: number): void {
     this.router.navigate(['/constellation', constellationId]);
+  }
+
+  async logout(): Promise<void> {
+    try {
+      console.log('ProfileComponent - Cerrando sesión...');
+      
+      // Verificar si estamos usando el servidor standalone
+      if (this.standaloneAuthService.isAuthenticated()) {
+        console.log('ProfileComponent - Usando logout standalone');
+        await firstValueFrom(this.standaloneAuthService.logout());
+      } else {
+        console.log('ProfileComponent - Usando logout tradicional');
+        await this.authService.logout();
+      }
+      
+      // Limpiar estado local
+      this.user.set(null);
+      this.favorites.set(null);
+      this.comments.set(null);
+      this.loading.set(false);
+      
+      // Navegar al login
+      this.router.navigate(['/login']);
+      
+      this.snackBar.open('Sesión cerrada correctamente', 'Cerrar', {
+        duration: 3000
+      });
+      
+      console.log('ProfileComponent - Logout completado');
+    } catch (error: any) {
+      console.error('Error en logout:', error);
+      this.snackBar.open('Error al cerrar sesión: ' + (error.message || error), 'Cerrar', {
+        duration: 3000
+      });
+    }
   }
 }

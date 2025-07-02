@@ -197,6 +197,14 @@ button[mat-raised-button]:hover {
   background-color: color-mix(in srgb, #FFF 20%, var(--error-message) 80%);
 }
 
+.action-buttons .secondary {
+  background-color: var(--border-color);
+  color: var(--text-color);
+}
+.action-buttons .secondary:hover {
+  background-color: color-mix(in srgb, #FFF 20%, var(--border-color) 80%);
+}
+
 /* Responsive */
 @media (min-width: 768px) {
 
