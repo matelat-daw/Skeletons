@@ -78,18 +78,28 @@ class JWTHandler {
             $expiration = 24 * 60 * 60; // 24 horas
         }
         
-        setcookie(
-            $name,
-            $token,
-            [
-                'expires' => time() + $expiration,
-                'path' => '/',
-                'domain' => '', // Ajustar según tu dominio
-                'secure' => false, // Cambiar a true en HTTPS
-                'httponly' => true, // Previene acceso desde JavaScript
-                'samesite' => 'Lax' // Protección CSRF
-            ]
-        );
+        // Detectar si estamos en Ngrok para ajustar configuración
+        $isNgrok = isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'ngrok') !== false;
+        
+        // Para Ngrok y contextos cross-origin, usar header personalizado para incluir Partitioned
+        if ($isNgrok) {
+            $cookieString = "{$name}={$token}; expires=" . gmdate('D, d M Y H:i:s T', time() + $expiration) . 
+                           "; path=/; secure; httponly; samesite=None; partitioned";
+            header("Set-Cookie: {$cookieString}", false);
+        } else {
+            setcookie(
+                $name,
+                $token,
+                [
+                    'expires' => time() + $expiration,
+                    'path' => '/',
+                    'domain' => '', // Vacío para permitir subdominios
+                    'secure' => isset($_SERVER['HTTPS']), // True en HTTPS
+                    'httponly' => true, // Previene acceso desde JavaScript
+                    'samesite' => 'Lax' // Lax para local
+                ]
+            );
+        }
     }
     
     public function getTokenFromCookie($name = 'auth_token') {
@@ -97,6 +107,9 @@ class JWTHandler {
     }
     
     public function clearCookie($name = 'auth_token') {
+        // Detectar si estamos en Ngrok para ajustar configuración
+        $isNgrok = isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'ngrok') !== false;
+        
         setcookie(
             $name,
             '',
@@ -104,9 +117,9 @@ class JWTHandler {
                 'expires' => time() - 3600, // Expira en el pasado
                 'path' => '/',
                 'domain' => '', // Debe coincidir con el dominio usado al crear la cookie
-                'secure' => false, // Cambiar a true en HTTPS
+                'secure' => $isNgrok || isset($_SERVER['HTTPS']), // True en HTTPS o Ngrok
                 'httponly' => true,
-                'samesite' => 'Lax'
+                'samesite' => $isNgrok ? 'None' : 'Lax' // Debe coincidir con el SameSite de la cookie original
             ]
         );
         

@@ -6,7 +6,7 @@ import { User } from '../../models/user';
 })
 export class UsersService {
 
-  private readonly API_URL = 'http://nexus-astralis.atspace.eu/api/Account'
+  private readonly API_URL = 'https://1771-88-24-26-59.ngrok-free.app/api/Account'
 
   token = signal<string | null>(sessionStorage.getItem('auth_token'));
 

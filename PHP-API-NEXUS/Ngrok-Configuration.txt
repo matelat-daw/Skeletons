@@ -1,0 +1,34 @@
+Password de matelat@outlook.es en Atspace.com
+
+Pass: Orions@68
+
+
+MySQL USER:
+3267420
+
+Base de datos enchating:
+
+3267420_enchating
+
+
+Ngrok:
+
+C:\ProgramData\chocolatey\lib\ngrok\tools
+ ShimGen has successfully created a shim for ngrok.exe
+ The install of ngrok was successful.
+  Software installed to 'C:\ProgramData\chocolatey\lib\ngrok\tools'
+
+Chocolatey installed 1/1 packages.
+ See the log for details (C:\ProgramData\chocolatey\logs\chocolatey.log).
+
+C:\Windows\System32>ngrok config add-authtoken 2zK5fCJlRyPDyZoWTj0HeTIAVBe_3H6gQaN5iWwhRPmv37Apv
+Authtoken saved to configuration file: C:\Users\Orion\AppData\Local/ngrok/ngrok.yml
+
+Para Servir (Tiene que ser en la Raiz):
+
+ngrok http http://localhost:8080
+
+
+Con un subdominio de Ngrok:
+
+ngrok http --url=settled-muskrat-peaceful.ngrok-free.app 80

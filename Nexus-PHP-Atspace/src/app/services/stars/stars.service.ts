@@ -6,7 +6,7 @@ import { Star } from '../../models/star';
 })
 export class StarsService {
 
-  private readonly API_URL = 'http://nexus-astralis.atspace.eu/api/Stars'
+  private readonly API_URL = 'https://1771-88-24-26-59.ngrok-free.app/api/Stars'
 
   constructor() { }
 

@@ -38,7 +38,7 @@ export class ConstellationsService {
   }
 
   async getCommentsById(id: number): Promise<Comments[]> {
-    const data = await fetch(`http://localhost:8080/Skeletons/PHP-API-NEXUS/api/Account/GetComments/${id}`);
+    const data = await fetch(`https://1771-88-24-26-59.ngrok-free.app/api/Account/GetComments/${id}`);
     if (!data.ok) throw new Error(`Error fetching comments for constellation ${id}: ${data.status}`);
     return data.json();
   }

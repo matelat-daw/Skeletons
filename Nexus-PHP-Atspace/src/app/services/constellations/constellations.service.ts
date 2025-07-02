@@ -9,7 +9,7 @@ import { Comments } from '../../models/comments';
 })
 export class ConstellationsService {
 
-  private readonly API_URL = 'http://nexus-astralis.atspace.eu/api/Constellations'
+  private readonly API_URL = 'https://1771-88-24-26-59.ngrok-free.app/api/Constellations'
 
   constructor() { }
 
@@ -38,7 +38,7 @@ export class ConstellationsService {
   }
 
   async getCommentsById(id: number): Promise<Comments[]> {
-    const data = await fetch(`http://nexus-astralis.atspace.eu/api/Account/GetComments/${id}`);
+    const data = await fetch(`https://1771-88-24-26-59.ngrok-free.app/api/Account/GetComments/${id}`);
     if (!data.ok) throw new Error(`Error fetching comments for constellation ${id}: ${data.status}`);
     return data.json();
   }
