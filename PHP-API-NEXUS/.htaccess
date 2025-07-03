@@ -8,13 +8,18 @@ php_value error_log /tmp/php_api_errors.log
 # Configuración de charset
 AddDefaultCharset UTF-8
 
-# PREVENIR que Apache agregue headers CORS automáticos
+# HABILITAR headers CORS desde Apache
 <IfModule mod_headers.c>
-    # Desactivar cualquier header CORS que Apache pueda estar agregando
-    Header unset "Access-Control-Allow-Origin" env=!CORS_ENABLED
-    Header unset "Access-Control-Allow-Credentials" env=!CORS_ENABLED
-    Header unset "Access-Control-Allow-Methods" env=!CORS_ENABLED
-    Header unset "Access-Control-Allow-Headers" env=!CORS_ENABLED
+    # Permitir orígenes específicos dinámicamente
+    SetEnvIfNoCase Origin "^https?://(localhost:4200|127\.0\.0\.1:4200|.*\.ngrok-free\.app)$" ORIGIN_ALLOWED=$0
+    
+    # Establecer headers CORS solo para orígenes permitidos
+    Header always set "Access-Control-Allow-Origin" "%{ORIGIN_ALLOWED}e" env=ORIGIN_ALLOWED
+    Header always set "Access-Control-Allow-Credentials" "true"
+    Header always set "Access-Control-Allow-Methods" "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set "Access-Control-Allow-Headers" "Content-Type, Authorization, X-Requested-With, Accept, Origin, ngrok-skip-browser-warning"
+    Header always set "Access-Control-Max-Age" "86400"
+    Header always set "ngrok-skip-browser-warning" "true"
 </IfModule>
 
 # Routing principal - redirigir todas las rutas al index.php (SIN headers CORS aquí)

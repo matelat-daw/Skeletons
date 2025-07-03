@@ -5,8 +5,8 @@ import { Injectable, signal } from '@angular/core';
 })
 export class ProxyAuthService {
 
-  private readonly PROXY_URL = 'https://1771-88-24-26-59.ngrok-free.app/proxy.php'
-  private readonly API_BASE = 'https://1771-88-24-26-59.ngrok-free.app'
+  private readonly PROXY_URL = 'https://b895-88-24-26-59.ngrok-free.app/proxy.php'
+  private readonly API_BASE = 'https://b895-88-24-26-59.ngrok-free.app'
 
   token = signal<string | null>(sessionStorage.getItem('auth_token'));
 

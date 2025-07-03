@@ -6,18 +6,23 @@ import { Star } from '../../models/star';
 })
 export class StarsService {
 
-  private readonly API_URL = 'https://1771-88-24-26-59.ngrok-free.app/api/Stars'
+  private readonly API_URL = 'https://b895-88-24-26-59.ngrok-free.app/api/Stars'
+  
+  private readonly headers = {
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true'
+  };
 
   constructor() { }
 
   async getAll(): Promise<Star[]> {
-    const data = await fetch(this.API_URL);
+    const data = await fetch(this.API_URL, { headers: this.headers });
     if (!data.ok) throw new Error(`Error fetching stars: ${data.status}`);
     return data.json();
   }
 
   async getById(id: number): Promise<Star> {
-    const data = await fetch(`${this.API_URL}/${id}`);
+    const data = await fetch(`${this.API_URL}/${id}`, { headers: this.headers });
     if (!data.ok) throw new Error(`Error fetching star ${id}: ${data.status}`);
     return data.json();
   }

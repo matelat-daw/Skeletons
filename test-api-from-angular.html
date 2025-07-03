@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Constellations API from Angular localhost</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test API desde localhost:4200</h1>
+    <button onclick="testConstellations()">Test Constellations API</button>
+    <button onclick="testStars()">Test Stars API</button>
+    <div id="results"></div>
+    
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(title, content, isSuccess) {
+            const div = document.createElement('div');
+            div.className = `result ${isSuccess ? 'success' : 'error'}`;
+            div.innerHTML = `<h3>${title}</h3><pre>${content}</pre>`;
+            resultsDiv.appendChild(div);
+        }
+        
+        async function testConstellations() {
+            try {
+                console.log('Testing Constellations API...');
+                const response = await fetch('https://b895-88-24-26-59.ngrok-free.app/api/Constellations', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Constellations data:', data);
+                
+                addResult('Constellations API - SUCCESS', 
+                    `Status: ${response.status}\nTotal constellations: ${data.length}\nFirst: ${data[0]?.latin_name || 'None'}`, 
+                    true);
+                    
+            } catch (error) {
+                console.error('Constellations error:', error);
+                addResult('Constellations API - ERROR', error.message, false);
+            }
+        }
+        
+        async function testStars() {
+            try {
+                console.log('Testing Stars API...');
+                const response = await fetch('https://b895-88-24-26-59.ngrok-free.app/api/Stars', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Stars data:', data);
+                
+                addResult('Stars API - SUCCESS', 
+                    `Status: ${response.status}\nTotal stars: ${data.length}\nFirst: ${data[0]?.proper || data[0]?.bf || 'None'}`, 
+                    true);
+                    
+            } catch (error) {
+                console.error('Stars error:', error);
+                addResult('Stars API - ERROR', error.message, false);
+            }
+        }
+        
+        // Auto-test on load
+        window.onload = function() {
+            console.log('Auto-testing APIs...');
+            setTimeout(testConstellations, 1000);
+            setTimeout(testStars, 2000);
+        };
+    </script>
+</body>
+</html>

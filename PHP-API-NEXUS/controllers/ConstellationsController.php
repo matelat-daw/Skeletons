@@ -24,7 +24,6 @@ class ConstellationsController extends BaseController {
             $constellations = $this->constellationModel->getAll();
             
             // Devolver directamente el array como lo espera Angular
-            header('Content-Type: application/json');
             echo json_encode($constellations);
             
         } catch (Exception $e) {

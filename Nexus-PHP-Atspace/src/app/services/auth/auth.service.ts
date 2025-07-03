@@ -5,7 +5,7 @@ import { User } from '../../models/user';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   constructor(private authGoogle: SocialAuthService) {}
-  private API_URL = 'https://1771-88-24-26-59.ngrok-free.app/api/';
+  private API_URL = 'https://b895-88-24-26-59.ngrok-free.app/api/';
   private passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).{8,}$/;
   private emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 

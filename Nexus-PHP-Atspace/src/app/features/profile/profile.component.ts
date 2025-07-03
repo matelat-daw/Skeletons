@@ -87,39 +87,56 @@ export class ProfileComponent implements OnInit {
     try {
       console.log('ProfileComponent - Cargando perfil...');
       
-      // Verificar si estamos usando el servidor standalone
-      if (this.standaloneAuthService.isAuthenticated()) {
-        console.log('ProfileComponent - Usando servidor standalone');
-        // Obtener el usuario del servicio standalone directamente
-        const user = this.standaloneAuthService.getCurrentUser();
-        if (user) {
-          // Convertir el usuario del standalone al formato esperado por el componente
-          const profileUser: User = {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            surname1: '',
-            surname2: '',
-            nick: user.email.split('@')[0], // Usar parte del email como nick
-            phoneNumber: '',
-            userLocation: '',
-            about: '',
-            bday: '1990-01-01', // Fecha por defecto como string
-            profileImage: 'assets/imgs/default-avatar.png',
-            publicProfile: true,
-            comments: [],
-            favorites: []
-          };
-          this.user.set(profileUser);
-          this.profileImage.set(profileUser.profileImage);
-          console.log('ProfileComponent - Usuario standalone cargado:', profileUser);
+      // Usar el AuthService real
+      if (this.authService.isAuthenticated()) {
+        console.log('ProfileComponent - Usando AuthService real');
+        
+        // Obtener el perfil del usuario desde la API real
+        try {
+          const response = await fetch(`${this.authService['API_URL']}Account/Profile`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': 'true',
+              'Authorization': `Bearer ${this.authService.token()}`
+            },
+            credentials: 'include'
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+          }
+
+          const profileData = await response.json();
+          console.log('ProfileComponent - Datos del perfil cargados:', profileData);
+
+          // Usar los datos del perfil real (la respuesta tiene data directamente, no data.user)
+          const userData = profileData.data;
+          if (userData) {
+            this.user.set(userData);
+            this.profileImage.set(userData.profileImage || 'assets/imgs/default-avatar.png');
+            
+            // Configurar favoritos si existen
+            if (userData.favorites) {
+              this.favorites.set(userData.favorites);
+            }
+            
+            // Configurar comentarios si existen
+            if (userData.comments) {
+              this.comments.set(userData.comments);
+            }
+            
+            console.log('ProfileComponent - Usuario real cargado:', userData);
+            console.log('ProfileComponent - Favoritos:', userData.favorites);
+            console.log('ProfileComponent - Comentarios:', userData.comments);
+          }
+        } catch (error) {
+          console.error('ProfileComponent - Error cargando perfil desde API:', error);
+          this.errorMessage.set('Error al cargar el perfil desde la API');
         }
       } else {
-        console.log('ProfileComponent - Usando servicio original');
-        // Usar el servicio original
-        const user = await this.usersService.getMyProfile();
-        this.user.set(user);
-        this.profileImage.set(user.profileImage);
+        console.log('ProfileComponent - Usuario no autenticado');
+        this.errorMessage.set('Usuario no autenticado');
       }
     } catch (error) {
       console.error('ProfileComponent - Error cargando perfil:', error);
@@ -346,12 +363,9 @@ export class ProfileComponent implements OnInit {
     try {
       console.log('ProfileComponent - Cerrando sesión...');
       
-      // Verificar si estamos usando el servidor standalone
-      if (this.standaloneAuthService.isAuthenticated()) {
-        console.log('ProfileComponent - Usando logout standalone');
-        await firstValueFrom(this.standaloneAuthService.logout());
-      } else {
-        console.log('ProfileComponent - Usando logout tradicional');
+      // Usar el AuthService real
+      if (this.authService.isAuthenticated()) {
+        console.log('ProfileComponent - Usando logout del AuthService real');
         await this.authService.logout();
       }
       

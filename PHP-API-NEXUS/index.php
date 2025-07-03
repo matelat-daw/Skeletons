@@ -10,15 +10,8 @@ ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 ini_set('error_log', 'C:\Server\apache\logs\php_errors.log');
 
-// Headers CORS SIEMPRE primero
-header("Access-Control-Allow-Origin: http://localhost:4200");
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin");
+// Content-Type para JSON (CORS headers se manejan en .htaccess)
 header("Content-Type: application/json; charset=UTF-8");
-
-// Header para evitar la página de advertencia de Ngrok
-header('ngrok-skip-browser-warning: true');
 
 // Log para debug
 error_log("=== API REQUEST ===");
@@ -37,7 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Router simple
+// Obtener el origen para CORS y debug
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+// Router simple - solo para endpoints específicos
 switch ($uri) {
     case '/':
     case '/test':
@@ -61,89 +57,91 @@ switch ($uri) {
         handleLogout();
         exit();
 
+    case '/api/Constellations':
+        // Solo el listado general, los detalles los maneja el Router original
+        handleConstellations();
+        exit();
+
     default:
-        // Si no es una ruta de API, continuar con el código original
+        // Todas las demás rutas (incluyendo /api/Constellations/{id}) van al Router original
         break;
 }
 
 function handleLogin() {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        http_response_code(405);
-        echo json_encode(['error' => 'Method not allowed']);
-        return;
-    }
-    
-    // Leer datos POST
-    $input = file_get_contents('php://input');
-    $data = json_decode($input, true);
-    
-    error_log("Login data received: " . $input);
-    
-    if (!$data || !isset($data['email']) || !isset($data['password'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Email and password required']);
-        return;
-    }
-    
-    $email = $data['email'];
-    $password = $data['password'];
-    
-    // Credenciales de prueba
-    $valid_credentials = [
-        'cesarmatelat@gmail.com' => 'test123',
-        'test@example.com' => 'password123'
-    ];
-    
-    if (isset($valid_credentials[$email]) && $valid_credentials[$email] === $password) {
-        // Login exitoso
-        $user = [
-            'id' => 1,
-            'email' => $email,
-            'name' => 'Test User',
-            'createdAt' => date('Y-m-d H:i:s'),
-            'isEmailConfirmed' => true
-        ];
-        
-        $response = [
-            'success' => true,
-            'message' => 'Login successful',
-            'user' => $user
-        ];
-        
-        error_log("Login successful for: $email");
-        echo json_encode($response);
-    } else {
-        // Login fallido
-        http_response_code(401);
+    try {
+        // Usar el controlador real de autenticación
+        require_once 'controllers/AuthController.php';
+        $controller = new AuthController();
+        $controller->login();
+    } catch (Exception $e) {
+        error_log("Error en handleLogin: " . $e->getMessage());
+        http_response_code(500);
         echo json_encode([
             'success' => false,
-            'error' => 'Invalid credentials'
+            'error' => 'Error interno del servidor'
         ]);
-        error_log("Login failed for: $email");
     }
 }
 
 function handleProfile() {
-    // Simular usuario autenticado
-    $user = [
-        'id' => 1,
-        'email' => 'cesarmatelat@gmail.com',
-        'name' => 'Test User',
-        'createdAt' => date('Y-m-d H:i:s'),
-        'isEmailConfirmed' => true
-    ];
-    
-    echo json_encode([
-        'success' => true,
-        'user' => $user
-    ]);
+    try {
+        // Usar el controlador real de cuenta
+        require_once 'controllers/AccountController.php';
+        $controller = new AccountController();
+        $controller->getProfile();
+    } catch (Exception $e) {
+        error_log("Error en handleProfile: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Error interno del servidor'
+        ]);
+    }
 }
 
 function handleLogout() {
-    echo json_encode([
-        'success' => true,
-        'message' => 'Logout successful'
-    ]);
+    try {
+        // Usar el controlador real de cuenta
+        require_once 'controllers/AccountController.php';
+        $controller = new AccountController();
+        $controller->logout();
+    } catch (Exception $e) {
+        error_log("Error en handleLogout: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Error interno del servidor'
+        ]);
+    }
+}
+
+function handleConstellations() {
+    try {
+        // Headers CORS manejados por .htaccess
+        header("Content-Type: application/json; charset=UTF-8", true);
+        
+        require_once 'controllers/ConstellationsController.php';
+        $controller = new ConstellationsController();
+        
+        // Obtener parámetros de la URL si existen
+        $params = [];
+        
+        // Parse query string si existe
+        if (!empty($_SERVER['QUERY_STRING'])) {
+            parse_str($_SERVER['QUERY_STRING'], $params);
+        }
+        
+        // Llamar al método getAll del controlador
+        $controller->getAll($params);
+        
+    } catch (Exception $e) {
+        error_log("Error en handleConstellations: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Error interno del servidor'
+        ]);
+    }
 }
 
 // Lista de orígenes permitidos (código original para compatibilidad)
@@ -165,31 +163,9 @@ error_log("PROXY DEBUG - Origin: " . $origin);
 error_log("PROXY DEBUG - URI: " . $request_uri);
 error_log("PROXY DEBUG - Is Ngrok: " . ($is_ngrok ? 'YES' : 'NO'));
 
-// Función de callback para establecer headers CORS en el último momento
-function setCORSHeadersCallback() {
-    global $origin, $allowed_origins, $is_ngrok;
-    
-    // Determinar el origin a usar
-    if (in_array($origin, $allowed_origins) || $is_ngrok || (!empty($origin) && strpos($origin, 'ngrok') !== false)) {
-        $cors_origin = $origin;
-    } else if (!empty($origin)) {
-        $cors_origin = $origin;
-    } else {
-        $cors_origin = 'http://localhost:4200';
-    }
-    
-    // Establecer headers CORS
-    header("Access-Control-Allow-Origin: $cors_origin", true);
-    header("Access-Control-Allow-Credentials: true", true);
-    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH", true);
-    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin", true);
-    header("Access-Control-Max-Age: 86400", true);
-    
-    error_log("CORS CALLBACK - Set origin: $cors_origin");
-}
+// Función de callback CORS removida - manejado por .htaccess
 
-// Registrar callback para establecer headers justo antes del envío
-header_register_callback('setCORSHeadersCallback');
+// Callback CORS removido - manejado por .htaccess
 
 // PROXY: Redirigir TODAS las peticiones al servidor standalone
 function proxyToStandalone() {
@@ -261,48 +237,13 @@ function proxyToStandalone() {
     }
 }
 
-// PROXY: Ejecutar proxy para TODAS las peticiones
-proxyToStandalone();
+// PROXY: Ejecutar proxy para TODAS las peticiones - COMENTADO PARA USAR CONTROLADORES REALES
+// proxyToStandalone();
 
-// === CÓDIGO ORIGINAL (ya no se ejecuta) ===
-error_log("CORS DEBUG - Request URI: " . ($_SERVER['REQUEST_URI'] ?? 'NO URI'));
-
-// Permitir el origen si está en la lista o es de Ngrok
-if (in_array($origin, $allowed_origins) || $is_ngrok) {
-    // Usar header con replace=true para sobrescribir cualquier header previo
-    header("Access-Control-Allow-Origin: $origin", true);
-    error_log("CORS DEBUG - Header set for: " . $origin);
-} else {
-    // TEMPORAL: Permitir Ngrok incluso si no coincide el patrón
-    if (!empty($origin) && strpos($origin, 'ngrok') !== false) {
-        header("Access-Control-Allow-Origin: $origin", true);
-        error_log("CORS DEBUG - Ngrok fallback for: " . $origin);
-    } else {
-        // NUNCA usar * cuando hay credenciales
-        error_log("CORS DEBUG - Origin REJECTED: " . $origin);
-        // NO establecer header para orígenes no permitidos
-    }
-}
-
-// Headers CORS complementarios (solo una vez) - FORZAR SOBRESCRIBIR
-header("Access-Control-Allow-Credentials: true", true);
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH", true);
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin", true);
-header("Access-Control-Max-Age: 86400", true);
-
-// AHORA establecer Content-Type después de CORS
-header('Content-Type: application/json; charset=UTF-8');
-
-// DEBUG: Verificar que no se establezcan headers CORS duplicados
-error_log("CORS DEBUG - Headers set - Allow-Origin: " . (headers_list() ? json_encode(preg_grep('/Access-Control-Allow-Origin/', headers_list())) : 'NONE'));
-error_log("CORS DEBUG - Headers set - Allow-Credentials: " . (headers_list() ? json_encode(preg_grep('/Access-Control-Allow-Credentials/', headers_list())) : 'NONE'));
-
-// DEBUG TEMPORAL: Agregar headers de debug a la respuesta para verificar
-if ($request_method !== 'OPTIONS') {
-    header("X-Debug-Origin: $origin");
-    header("X-Debug-Is-Ngrok: " . ($is_ngrok ? 'YES' : 'NO'));
-    header("X-Debug-Allowed: " . (in_array($origin, $allowed_origins) || $is_ngrok ? 'YES' : 'NO'));
-}
+// === MAIN PROCESSING ===
+// Headers CORS manejados exclusivamente por .htaccess
+// Content-Type para JSON
+header("Content-Type: application/json; charset=UTF-8");
 
 // Manejar preflight OPTIONS aquí (primera y única línea de defensa)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

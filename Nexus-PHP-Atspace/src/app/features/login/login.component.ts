@@ -37,11 +37,11 @@ export class LoginComponent implements OnInit {
 
   // Getter público para el template
   get standaloneAuth() {
-    return this.standaloneAuthService;
+    return this.authService;
   }
 
   ngOnInit() {
-    if (this.standaloneAuthService.isAuthenticated()) {
+    if (this.authService.isAuthenticated()) {
       this.router.navigate(['/profile']);
     }
     this.authGoogle.authState.subscribe((user) => {
@@ -74,15 +74,15 @@ export class LoginComponent implements OnInit {
     try {
       const { email, password } = this.form.value;
       
-      console.log('Usando servidor standalone para login');
+      console.log('Usando AuthService real para login');
       
-      // Usar firstValueFrom en lugar de toPromise (deprecated)
-      const response = await firstValueFrom(this.standaloneAuthService.login(email!, password!));
-      console.log('Login exitoso con standalone:', response);
+      // Usar el AuthService real en lugar del standalone
+      await this.authService.login(email!, password!);
+      console.log('Login exitoso con AuthService real');
       
       // Verificar que el usuario esté autenticado
-      console.log('Usuario autenticado:', this.standaloneAuthService.isAuthenticated());
-      console.log('Usuario actual:', this.standaloneAuthService.getCurrentUser());
+      console.log('Usuario autenticado:', this.authService.isAuthenticated());
+      console.log('Token:', this.authService.token());
       
       // Intentar navegar al perfil
       console.log('Intentando navegar a /profile...');
@@ -111,8 +111,8 @@ export class LoginComponent implements OnInit {
   }
 
   toggleServer(): void {
-    const currentlyUsingNgrok = this.standaloneAuthService.getCurrentUrl().includes('ngrok');
-    this.standaloneAuthService.setUseNgrok(!currentlyUsingNgrok);
+    // El AuthService real siempre usa la URL de Ngrok configurada
+    console.log('AuthService real está usando:', 'https://b895-88-24-26-59.ngrok-free.app');
     this.loginError = '';
     this.errorMessages = {};
   }

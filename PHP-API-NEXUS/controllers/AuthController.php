@@ -87,8 +87,9 @@ class AuthController extends BaseController {
             // Establecer cookie con la misma expiración
             $this->jwt->setCookie($token, 'auth_token', $expiration);
             
-            // Respuesta exitosa
+            // Respuesta exitosa (incluir token tanto en cookie como en JSON)
             $this->sendResponse(200, "Login exitoso", [
+                'token' => $token,  // ← Agregar token al JSON
                 'user' => [
                     'id' => $user->id,
                     'email' => $user->email,

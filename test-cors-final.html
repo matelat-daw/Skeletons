@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test CORS Final - Constelaciones</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+        }
+        .test-button { 
+            background: #16213e; 
+            color: white; 
+            border: 1px solid #0f3460;
+            padding: 10px 20px; 
+            margin: 10px; 
+            cursor: pointer; 
+            border-radius: 5px;
+        }
+        .test-button:hover { 
+            background: #0f3460; 
+        }
+        .result { 
+            background: #16213e; 
+            border: 1px solid #0f3460;
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 5px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { 
+            border-color: #28a745; 
+            background: #1a2f1a;
+        }
+        .error { 
+            border-color: #dc3545; 
+            background: #2f1a1a;
+        }
+        .info {
+            background: #16213e;
+            border: 1px solid #17a2b8;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌟 Test CORS Final - API Constelaciones</h1>
+        
+        <div class="info">
+            <p><strong>Objetivo:</strong> Verificar que CORS funciona correctamente tras la limpieza del código PHP.</p>
+            <p><strong>Cambios realizados:</strong></p>
+            <ul>
+                <li>✅ Eliminados TODOS los headers CORS del código PHP (index.php, controllers)</li>
+                <li>✅ Configurado .htaccess para manejar CORS dinámicamente</li>
+                <li>✅ Soporte para localhost:4200 y URLs *.ngrok-free.app</li>
+                <li>✅ Sin headers duplicados</li>
+            </ul>
+        </div>
+
+        <div style="margin: 20px 0;">
+            <button class="test-button" onclick="testLocalhost()">
+                🏠 Test Localhost (8080)
+            </button>
+            <button class="test-button" onclick="testNgrok()">
+                🌐 Test Ngrok
+            </button>
+            <button class="test-button" onclick="testBoth()">
+                🔄 Test Ambos
+            </button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const LOCALHOST_URL = 'http://localhost:8080/api/Constellations';
+        const NGROK_URL = 'https://b895-88-24-26-59.ngrok-free.app/api/Constellations';
+
+        function addResult(title, content, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = `<strong>${title}</strong>\n${content}`;
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        async function makeRequest(url, description) {
+            try {
+                addResult(`🚀 ${description}`, `Iniciando petición a: ${url}`, 'info');
+                
+                const startTime = Date.now();
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    credentials: 'include'  // Para test de CORS con credenciales
+                });
+
+                const duration = Date.now() - startTime;
+                const data = await response.json();
+
+                if (response.ok) {
+                    const headers = {};
+                    for (let [key, value] of response.headers.entries()) {
+                        headers[key] = value;
+                    }
+
+                    const summary = `✅ SUCCESS (${response.status}) - ${duration}ms
+🔗 URL: ${url}
+📊 Datos: ${Array.isArray(data) ? data.length : 'N/A'} constelaciones
+🛡️  CORS Headers:
+  - Access-Control-Allow-Origin: ${headers['access-control-allow-origin'] || 'NO SET'}
+  - Access-Control-Allow-Credentials: ${headers['access-control-allow-credentials'] || 'NO SET'}
+  - Access-Control-Allow-Methods: ${headers['access-control-allow-methods'] || 'NO SET'}
+
+📝 Primeras 3 constelaciones:
+${Array.isArray(data) ? data.slice(0, 3).map(c => `  • ${c.code} - ${c.english_name}`).join('\n') : 'Error: no es array'}`;
+
+                    addResult(`✅ ${description}`, summary, 'success');
+                } else {
+                    addResult(`❌ ${description}`, `Error ${response.status}: ${data.message || 'Error desconocido'}`, 'error');
+                }
+
+            } catch (error) {
+                const errorMsg = `❌ ERROR: ${error.message}
+🔍 Tipo: ${error.name}
+📍 Probables causas:
+  - Error de CORS (headers duplicados/incorrectos)
+  - Servidor no disponible
+  - Problema de red/SSL
+  - Headers CORS mal configurados`;
+
+                addResult(`❌ ${description}`, errorMsg, 'error');
+            }
+        }
+
+        async function testLocalhost() {
+            await makeRequest(LOCALHOST_URL, 'Test Localhost');
+        }
+
+        async function testNgrok() {
+            await makeRequest(NGROK_URL, 'Test Ngrok');
+        }
+
+        async function testBoth() {
+            addResult('🔄 Test Completo', 'Iniciando pruebas completas...', 'info');
+            await testLocalhost();
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s
+            await testNgrok();
+            addResult('🏁 Test Completo', 'Todas las pruebas completadas.', 'info');
+        }
+
+        // Test automático al cargar
+        window.onload = () => {
+            addResult('🌟 Sistema Cargado', 'Listo para probar CORS tras limpieza de código PHP.', 'info');
+        };
+    </script>
+</body>
+</html>

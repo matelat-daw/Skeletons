@@ -28,7 +28,7 @@ export interface LoginResponse {
 })
 export class StandaloneAuthService {
   private readonly localUrl = 'http://localhost:8000';
-  private readonly ngrokUrl = 'https://d1de-88-24-26-59.ngrok-free.app';
+  private readonly ngrokUrl = 'https://b895-88-24-26-59.ngrok-free.app';
   private useNgrok = false; // Por defecto usar local
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
