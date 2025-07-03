@@ -7,12 +7,70 @@ abstract class BaseController {
     protected $dbManager;
     
     public function __construct() {
+        // Configurar CORS headers primero
+        $this->setupCORS();
+        
         // Incluir dependencias comunes
         require_once 'config/database_manager.php';
         require_once 'config/jwt.php';
         
         $this->dbManager = new DatabaseManager();
         $this->jwt = new JWTHandler();
+    }
+    
+    /**
+     * Configura headers CORS para todas las respuestas
+     */
+    private function setupCORS() {
+        $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        
+        error_log("CORS DEBUG - Origin: '$origin', Host: '$host'");
+        
+        // Lista de orígenes permitidos
+        $allowed_origins = [
+            'http://localhost:4200',
+            'https://localhost:4200',
+            'http://127.0.0.1:4200',
+            'https://127.0.0.1:4200',
+        ];
+        
+        // Verificar si el origen es un subdominio de ngrok-free.app
+        $is_ngrok_origin = preg_match('/^https:\/\/[a-zA-Z0-9\-]+\.ngrok-free\.app$/', $origin);
+        
+        // Verificar si estamos siendo accedidos a través de Ngrok
+        $is_ngrok_host = strpos($host, '.ngrok-free.app') !== false;
+        
+        error_log("CORS DEBUG - is_ngrok_origin: " . ($is_ngrok_origin ? 'true' : 'false'));
+        error_log("CORS DEBUG - is_ngrok_host: " . ($is_ngrok_host ? 'true' : 'false'));
+        error_log("CORS DEBUG - in_allowed_origins: " . (in_array($origin, $allowed_origins) ? 'true' : 'false'));
+        
+        // Si estamos en Ngrok o el origen está permitido, configurar CORS
+        if ($is_ngrok_host || $is_ngrok_origin || in_array($origin, $allowed_origins)) {
+            // Si tenemos un origen específico, usarlo. Si no, permitir el origen que viene en la petición
+            if ($origin && ($is_ngrok_host || $is_ngrok_origin || in_array($origin, $allowed_origins))) {
+                header("Access-Control-Allow-Origin: " . $origin);
+                header("Access-Control-Allow-Credentials: true");
+                error_log("CORS DEBUG - Set specific origin: $origin with credentials: true");
+            } else {
+                // Fallback: permitir cualquier origen pero sin credentials
+                header("Access-Control-Allow-Origin: *");
+                header("Access-Control-Allow-Credentials: false");
+                error_log("CORS DEBUG - Set wildcard origin with credentials: false");
+            }
+            
+            header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+            header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin, ngrok-skip-browser-warning");
+            header("Access-Control-Max-Age: 86400");
+        } else {
+            error_log("CORS DEBUG - CORS headers NOT set - criteria not met");
+        }
+        
+        // Manejar preflight OPTIONS
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(200);
+            exit();
+        }
     }
     
     /**

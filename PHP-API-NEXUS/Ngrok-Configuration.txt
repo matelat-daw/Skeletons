@@ -31,4 +31,7 @@ ngrok http http://localhost:8080
 
 Con un subdominio de Ngrok:
 
-ngrok http --url=settled-muskrat-peaceful.ngrok-free.app 80
+ngrok http --url=settled-muskrat-peaceful.ngrok-free.app 8080
+
+
+ngrok http --url=b895-88-24-26-59.ngrok-free.app

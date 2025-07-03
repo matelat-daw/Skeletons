@@ -6,7 +6,7 @@ import { Star } from '../../models/star';
 })
 export class StarsService {
 
-  private readonly API_URL = 'https://b895-88-24-26-59.ngrok-free.app/api/Stars'
+  private readonly API_URL = 'https://settled-muskrat-peaceful.ngrok-free.app/api/Stars'
   
   private readonly headers = {
     'Content-Type': 'application/json',

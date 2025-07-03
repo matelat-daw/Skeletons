@@ -9,7 +9,7 @@ import { Comments } from '../../models/comments';
 })
 export class ConstellationsService {
 
-  private readonly API_URL = 'https://b895-88-24-26-59.ngrok-free.app/api/Constellations'
+  private readonly API_URL = 'https://settled-muskrat-peaceful.ngrok-free.app/api/Constellations'
   
   private readonly headers = {
     'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export class ConstellationsService {
   }
 
   async getCommentsById(id: number): Promise<Comments[]> {
-    const data = await fetch(`https://b895-88-24-26-59.ngrok-free.app/api/Account/GetComments/${id}`, { headers: this.headers });
+    const data = await fetch(`https://settled-muskrat-peaceful.ngrok-free.app/api/Account/GetComments/${id}`, { headers: this.headers });
     if (!data.ok) throw new Error(`Error fetching comments for constellation ${id}: ${data.status}`);
     return data.json();
   }

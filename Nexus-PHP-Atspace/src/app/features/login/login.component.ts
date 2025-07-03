@@ -112,7 +112,7 @@ export class LoginComponent implements OnInit {
 
   toggleServer(): void {
     // El AuthService real siempre usa la URL de Ngrok configurada
-    console.log('AuthService real está usando:', 'https://b895-88-24-26-59.ngrok-free.app');
+    console.log('AuthService real está usando:', 'https://settled-muskrat-peaceful.ngrok-free.app');
     this.loginError = '';
     this.errorMessages = {};
   }

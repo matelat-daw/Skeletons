@@ -10,7 +10,46 @@ ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 ini_set('error_log', 'C:\Server\apache\logs\php_errors.log');
 
-// Content-Type para JSON (CORS headers se manejan en .htaccess)
+// Obtener el origen para CORS
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$host = $_SERVER['HTTP_HOST'] ?? '';
+
+// Lista de orígenes permitidos
+$allowed_origins = [
+    'http://localhost:4200',
+    'https://localhost:4200',
+    'http://127.0.0.1:4200',
+    'https://127.0.0.1:4200',
+];
+
+// Verificar si el origen es un subdominio de ngrok-free.app
+$is_ngrok_origin = preg_match('/^https:\/\/[a-zA-Z0-9\-]+\.ngrok-free\.app$/', $origin);
+
+// Verificar si estamos siendo accedidos a través de Ngrok
+$is_ngrok_host = strpos($host, '.ngrok-free.app') !== false;
+
+// Configurar headers CORS manualmente (necesario para Nginx)
+if ($is_ngrok_host || $is_ngrok_origin || in_array($origin, $allowed_origins)) {
+    // Si tenemos un origen específico, usarlo. Si no, permitir el origen que viene en la petición
+    if ($origin && ($is_ngrok_host || $is_ngrok_origin || in_array($origin, $allowed_origins))) {
+        header("Access-Control-Allow-Origin: " . $origin);
+        header("Access-Control-Allow-Credentials: true");
+    } else {
+        // Fallback: permitir cualquier origen pero sin credentials
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Credentials: false");
+    }
+    
+    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin, ngrok-skip-browser-warning");
+    header("Access-Control-Max-Age: 86400");
+    
+    error_log("CORS headers set - Origin: $origin, Host: $host");
+} else {
+    error_log("CORS headers NOT set - Origin: $origin, Host: $host");
+}
+
+// Content-Type para JSON
 header("Content-Type: application/json; charset=UTF-8");
 
 // Log para debug
@@ -18,6 +57,8 @@ error_log("=== API REQUEST ===");
 error_log("Method: " . $_SERVER['REQUEST_METHOD']);
 error_log("URI: " . $_SERVER['REQUEST_URI']);
 error_log("Origin: " . ($_SERVER['HTTP_ORIGIN'] ?? 'none'));
+error_log("Host: " . ($_SERVER['HTTP_HOST'] ?? 'none'));
+error_log("User-Agent: " . ($_SERVER['HTTP_USER_AGENT'] ?? 'none'));
 
 // Manejar OPTIONS (preflight CORS)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -117,9 +158,7 @@ function handleLogout() {
 
 function handleConstellations() {
     try {
-        // Headers CORS manejados por .htaccess
-        header("Content-Type: application/json; charset=UTF-8", true);
-        
+        // Los headers CORS ya están configurados en el BaseController
         require_once 'controllers/ConstellationsController.php';
         $controller = new ConstellationsController();
         

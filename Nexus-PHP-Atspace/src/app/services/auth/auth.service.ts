@@ -5,7 +5,7 @@ import { User } from '../../models/user';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   constructor(private authGoogle: SocialAuthService) {}
-  private API_URL = 'https://b895-88-24-26-59.ngrok-free.app/api/';
+  private API_URL = 'https://settled-muskrat-peaceful.ngrok-free.app/api/';
   private passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).{8,}$/;
   private emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -20,7 +20,13 @@ export class AuthService {
   }
 
   private async fetchAndHandle(url: string, options: RequestInit, errorMap?: Record<string, string>): Promise<string> {
-    const response = await fetch(url, options);
+    // Asegurar que siempre tengamos los headers necesarios
+    const headers = {
+      'ngrok-skip-browser-warning': 'true',
+      ...options.headers
+    };
+    
+    const response = await fetch(url, { ...options, headers });
     const responseText = await response.text();
     if (!response.ok) {
       if (errorMap) {
@@ -75,7 +81,8 @@ export class AuthService {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
         },
         body: JSON.stringify({ email, password }),
         credentials: 'include'

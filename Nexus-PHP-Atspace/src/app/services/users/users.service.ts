@@ -6,14 +6,23 @@ import { User } from '../../models/user';
 })
 export class UsersService {
 
-  private readonly API_URL = 'https://b895-88-24-26-59.ngrok-free.app/api/Account'
+  private readonly API_URL = 'https://settled-muskrat-peaceful.ngrok-free.app/api/Account'
 
   token = signal<string | null>(sessionStorage.getItem('auth_token'));
 
   constructor() { }
 
+  private async fetchWithHeaders(url: string, options: RequestInit = {}): Promise<Response> {
+    const headers = {
+      'ngrok-skip-browser-warning': 'true',
+      ...options.headers
+    };
+    
+    return fetch(url, { ...options, headers });
+  }
+
   async getAll(): Promise<User[]> {
-    const data = await fetch(`${this.API_URL}/GetUsers`, {
+    const data = await this.fetchWithHeaders(`${this.API_URL}/GetUsers`, {
       method: 'GET',
       credentials: 'include'
     });
@@ -22,7 +31,7 @@ export class UsersService {
   }
 
   async getInfoByNick(nick: string): Promise<User> {
-    const data = await fetch(`${this.API_URL}/GetUserInfo/${nick}`, {
+    const data = await this.fetchWithHeaders(`${this.API_URL}/GetUserInfo/${nick}`, {
       method: 'GET',
       credentials: 'include'
     });
@@ -31,7 +40,7 @@ export class UsersService {
   }
 
   async getMyProfile(): Promise<User> {
-    const data = await fetch(`${this.API_URL}/Profile`, {
+    const data = await this.fetchWithHeaders(`${this.API_URL}/Profile`, {
       method: 'GET',
       credentials: 'include'
     });
@@ -55,7 +64,7 @@ export class UsersService {
         constellationId: constellationId,
       };
       
-      const data = await fetch(`${this.API_URL}/Comments`, {
+      const data = await this.fetchWithHeaders(`${this.API_URL}/Comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -75,7 +84,7 @@ export class UsersService {
 
   async deleteComment(id: number): Promise<boolean> {
     try{
-      const data = await fetch(`${this.API_URL}/Comments/${id}`, {
+      const data = await this.fetchWithHeaders(`${this.API_URL}/Comments/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -93,7 +102,7 @@ export class UsersService {
   }
 
   async addFavorite(id: number): Promise<boolean> {
-    const data = await fetch(`${this.API_URL}/Favorites/${id}`, {
+    const data = await this.fetchWithHeaders(`${this.API_URL}/Favorites/${id}`, {
       method: 'POST',
       credentials: 'include'
     });
@@ -103,7 +112,7 @@ export class UsersService {
   }
 
   async deleteFavorite(id: number): Promise<boolean> {
-    const data = await fetch(`${this.API_URL}/Favorites/${id}`, {
+    const data = await this.fetchWithHeaders(`${this.API_URL}/Favorites/${id}`, {
       method: 'DELETE',
       credentials: 'include'
     });
@@ -113,7 +122,7 @@ export class UsersService {
   }
 
   async isMyFavorite(id: number): Promise<boolean> {
-    const data = await fetch(`${this.API_URL}/Favorites/${id}`, {
+    const data = await this.fetchWithHeaders(`${this.API_URL}/Favorites/${id}`, {
       method: 'GET',
       credentials: 'include'
     });
@@ -139,7 +148,7 @@ export class UsersService {
     formData.append('PublicProfile', profile.publicProfile === true ? "1" : "0");
     
     try {
-      const response = await fetch(`${this.API_URL}/Update`, {
+      const response = await this.fetchWithHeaders(`${this.API_URL}/Update`, {
         method: 'PATCH',
         body: formData,
         credentials: 'include'
@@ -157,7 +166,7 @@ export class UsersService {
   }
 
   async deleteMyAccount(): Promise<void> {
-    const response = await fetch(`${this.API_URL}/Delete`, {
+    const response = await this.fetchWithHeaders(`${this.API_URL}/Delete`, {
       method: 'DELETE',
       credentials: 'include'
     });
