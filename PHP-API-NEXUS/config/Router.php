@@ -155,17 +155,9 @@ class Router {
         $method = $_SERVER['REQUEST_METHOD'];
         $currentPath = $this->getCurrentPath();
         
-        // Debug temporal - Log de la petición
-        error_log("ROUTER: Method=$method, Path='$currentPath', URI='" . $_SERVER['REQUEST_URI'] . "'");
-        
-        // NO manejar OPTIONS aquí - ya se maneja en index.php
-        // El Router solo maneja rutas normales (GET, POST, PUT, DELETE, PATCH)
-        
         // Buscar ruta coincidente
         foreach ($this->routes as $route) {
-            error_log("ROUTER: Checking route: {$route['method']} {$route['path']} vs $method $currentPath");
             if ($route['method'] === $method && preg_match($route['pattern'], $currentPath)) {
-                error_log("ROUTER: Route matched! Executing {$route['controller']}::{$route['action']}");
                 // Extraer parámetros de la URL
                 $params = $this->extractParams($route['path'], $currentPath);
                 
@@ -176,7 +168,6 @@ class Router {
         }
         
         // Si no se encuentra la ruta, devolver 404
-        error_log("ROUTER: No route found for $method $currentPath");
         $this->sendNotFound();
     }
 
@@ -210,22 +201,12 @@ class Router {
      * Envía respuesta 404
      */
     private function sendNotFound() {
-        // Debug temporal
-        error_log("404 - Path: " . $this->getCurrentPath() . " - Method: " . $_SERVER['REQUEST_METHOD']);
-        error_log("Origin: " . ($_SERVER['HTTP_ORIGIN'] ?? 'No origin'));
-        error_log("404 - Headers before response: " . json_encode(headers_list()));
-        
         http_response_code(404);
         echo json_encode([
             'message' => 'Endpoint no encontrado',
             'success' => false,
             'path' => $this->getCurrentPath(),
-            'method' => $_SERVER['REQUEST_METHOD'],
-            'debug' => [
-                'request_uri' => $_SERVER['REQUEST_URI'] ?? '',
-                'script_name' => $_SERVER['SCRIPT_NAME'] ?? '',
-                'origin' => $_SERVER['HTTP_ORIGIN'] ?? ''
-            ]
+            'method' => $_SERVER['REQUEST_METHOD']
         ]);
     }
 
