@@ -4,6 +4,24 @@
  * Maneja todas las rutas de la API con configuración CORS centralizada
  */
 
+// Cargar variables de entorno desde .env
+function loadEnvFile($filePath) {
+    if (file_exists($filePath)) {
+        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (strpos(trim($line), '#') === 0) continue;
+            if (strpos($line, '=') !== false) {
+                list($name, $value) = explode('=', $line, 2);
+                $name = trim($name);
+                $value = trim($value, '"\'');
+                putenv("$name=$value");
+                $_ENV[$name] = $value;
+            }
+        }
+    }
+}
+loadEnvFile(__DIR__ . '/.env');
+
 // Configuración inicial
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -42,6 +60,11 @@ switch ($uri) {
         (new AuthController())->login();
         exit();
 
+    case '/api/Auth/GoogleLogin':
+        require_once 'controllers/AuthController.php';
+        (new AuthController())->googleLogin();
+        exit();
+
     case '/api/Account/Profile':
         require_once 'controllers/AccountController.php';
         (new AccountController())->getProfile();
@@ -60,6 +83,35 @@ switch ($uri) {
             parse_str($_SERVER['QUERY_STRING'], $params);
         }
         $controller->getAll($params);
+        exit();
+
+    case '/api/Auth/DebugGoogleToken':
+        // Endpoint temporal para debugging de tokens de Google
+        $input = file_get_contents('php://input');
+        $data = json_decode($input, true);
+        $token = $data['token'] ?? null;
+        
+        if (!$token) {
+            echo json_encode(['error' => 'Token requerido']);
+            exit();
+        }
+        
+        require_once 'services/GoogleAuthService.php';
+        try {
+            $googleService = new GoogleAuthService();
+            $payload = $googleService->validateGoogleToken($token);
+            echo json_encode([
+                'success' => true,
+                'client_id_configured' => $googleService->getClientId(),
+                'payload' => $payload
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'client_id_configured' => (new GoogleAuthService())->getClientId()
+            ]);
+        }
         exit();
 
     default:

@@ -1,20 +1,31 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { User } from '../../models/user';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UsersService {
 
-  private readonly API_URL = 'http://localhost:8080/api/Account'
-
-  token = signal<string | null>(sessionStorage.getItem('auth_token'));
+  private readonly API_URL = 'http://localhost:8080/api/Account';
+  private authService = inject(AuthService);
 
   constructor() { }
 
   async getAll(): Promise<User[]> {
+    const token = this.authService.token();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    };
+    
+    // Agregar token de autorización si existe
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const data = await fetch(`${this.API_URL}/GetUsers`, {
       method: 'GET',
+      headers,
       credentials: 'include'
     });
     if (!data.ok) throw new Error(`Error fetching users: ${data.status}`);
@@ -22,8 +33,19 @@ export class UsersService {
   }
 
   async getInfoByNick(nick: string): Promise<User> {
+    const token = this.authService.token();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    };
+    
+    // Agregar token de autorización si existe
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const data = await fetch(`${this.API_URL}/GetUserInfo/${nick}`, {
       method: 'GET',
+      headers,
       credentials: 'include'
     });
     if (!data.ok) throw new Error(`Error fetching user info: ${data.status}`);
@@ -31,8 +53,19 @@ export class UsersService {
   }
 
   async getMyProfile(): Promise<User> {
+    const token = this.authService.token();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    };
+    
+    // Agregar token de autorización si existe
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const data = await fetch(`${this.API_URL}/Profile`, {
       method: 'GET',
+      headers,
       credentials: 'include'
     });
     if (!data.ok) throw new Error(`Error fetching user profile: ${data.status}`);
@@ -163,7 +196,7 @@ export class UsersService {
     });
     if (!response.ok) throw new Error(response.statusText);
     sessionStorage.clear();
-    this.token.set(null);
+    this.authService.token.set(null);
     window.location.reload();
   }
 }

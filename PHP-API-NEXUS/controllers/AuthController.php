@@ -362,7 +362,7 @@ class AuthController extends BaseController {
 
     /**
      * POST /api/Auth/GoogleLogin
-     * Autentica un usuario usando Google y establece cookie JWT
+     * Autenticación con Google usando token JWT (equivalente al método ASP.NET)
      */
     public function googleLogin($params = []) {
         try {
@@ -371,6 +371,7 @@ class AuthController extends BaseController {
             
             if (!$input) {
                 $this->sendResponse(400, "Datos de entrada requeridos", null, false);
+                return;
             }
             
             // Crear y llenar el modelo ExternalLogin
@@ -379,58 +380,55 @@ class AuthController extends BaseController {
             // Validar el modelo
             if (!$externalLoginModel->isValid()) {
                 $errors = $externalLoginModel->getValidationErrors();
-                $this->sendResponse(400, "Datos de login inválidos", [
+                $this->sendResponse(400, "Token de Google requerido", [
                     'errors' => $errors
                 ], false);
+                return;
             }
             
-            // Verificar token de Google
-            $googleData = $this->googleAuthService->verifyIdToken($externalLoginModel->id_token);
-            
-            if (!$googleData) {
-                $this->sendResponse(401, "Token de Google inválido", null, false);
+            // Validar el token de Google usando GoogleAuthService
+            try {
+                $payload = $this->googleAuthService->validateGoogleToken($externalLoginModel->token);
+            } catch (Exception $e) {
+                $this->sendResponse(400, "Token Inválido", [
+                    'error' => $e->getMessage()
+                ], false);
+                return;
             }
             
-            // Buscar o crear usuario
-            $user = $this->userRepository->findByEmail($googleData->email);
+            // Extraer información del payload (equivalente a ASP.NET payload)
+            $email = $payload['email'];
+            $name = $payload['name'];
+            $picture = $payload['picture'];
+            
+            if (!$email) {
+                $this->sendResponse(400, "Email no disponible en el token de Google", null, false);
+                return;
+            }
+            
+            // Verificar o crear usuario (equivalente a VerifyUser en ASP.NET)
+            $user = $this->verifyUser($email, $name, $picture);
             
             if (!$user) {
-                // Crear nuevo usuario si no existe
-                $user = new stdClass();
-                $user->id = $this->userRepository->generateId();
-                $user->email = $googleData->email;
-                $user->nick = $googleData->name; // Usar nombre como nick por defecto
-                $user->name = $googleData->name;
-                $user->surname1 = ''; // Sin apellido por defecto
-                $user->passwordHash = ''; // Sin contraseña
-                $user->emailConfirmed = 1; // Confirmar email automáticamente
-                
-                // Crear usuario en la base de datos
-                $this->userRepository->create($user);
-            } else {
-                // Actualizar datos del usuario si es necesario
-                $user->name = $googleData->name;
-                $user->surname1 = '';
-                $user->emailConfirmed = 1; // Asegurarse de que el email esté confirmado
-                $this->userRepository->update($user);
+                $this->sendResponse(500, "Error verificando o creando usuario", null, false);
+                return;
             }
             
-            // Generar JWT
-            $expiration = 86400; // 1 día
+            // Generar token local JWT (equivalente a GenerateToken en ASP.NET)
+            $expiration = 86400; // 1 día por defecto para login con Google
             $jwtPayload = AuthService::generateJwtPayload($user, $expiration);
-            $token = $this->jwt->generateTokenFromPayload($jwtPayload);
+            $localToken = $this->jwt->generateTokenFromPayload($jwtPayload);
             
-            // Establecer cookie con la misma expiración
-            $this->jwt->setCookie($token, 'auth_token', $expiration);
+            // Establecer cookie con el token
+            $this->jwt->setCookie($localToken, 'auth_token', $expiration);
             
-            // Respuesta exitosa
-            $this->sendResponse(200, "Login con Google exitoso", [
-                'user' => [
-                    'id' => $user->id,
-                    'email' => $user->email,
-                    'nick' => $user->nick,
-                    'name' => $user->name
-                ]
+            // Respuesta exitosa (formato similar a ASP.NET)
+            $this->sendResponse(200, "Inicio de Sesión Exitoso", [
+                'token' => $localToken,
+                'nick' => $user->nick,
+                'email' => $user->email,
+                'name' => $user->name,
+                'profileImage' => $user->profileImage
             ], true);
             
         } catch (Exception $e) {
@@ -440,149 +438,82 @@ class AuthController extends BaseController {
     }
 
     /**
-     * POST /api/Auth/ExternalLogin
-     * Autentica un usuario con login externo (Google)
-     * Compatible con ASP.NET Identity ExternalLogin
+     * Verificar o crear usuario para login externo (equivalente a VerifyUser en ASP.NET)
+     * @param string $email Email del usuario
+     * @param string $name Nombre del usuario  
+     * @param string $picture URL de la imagen de perfil
+     * @return User|null Usuario verificado o creado
      */
-    public function externalLogin($params = []) {
+    private function verifyUser($email, $name, $picture) {
         try {
-            // Obtener datos de entrada (JSON o multipart/form-data)
-            $input = $this->getRequestData();
-            
-            if (!$input) {
-                $this->sendResponse(400, "Datos de entrada requeridos", null, false);
-            }
-            
-            // Crear y validar el modelo ExternalLogin
-            $externalLoginModel = new ExternalLogin($input);
-            
-            if (!$externalLoginModel->isValid()) {
-                $errors = $externalLoginModel->getValidationErrors();
-                $this->sendResponse(400, "Datos de login externo inválidos", [
-                    'errors' => $errors
-                ], false);
-            }
-            
-            // Validar token de Google
-            $googleUserInfo = null;
-            if ($externalLoginModel->provider === 'Google') {
-                $googleUserInfo = $this->googleAuthService->validateToken($externalLoginModel->providerKey);
-                
-                if (!$googleUserInfo) {
-                    $this->sendResponse(401, "Token de Google inválido o expirado", null, false);
-                }
-                
-                // Verificar que el email coincida
-                if ($googleUserInfo['email'] !== $externalLoginModel->email) {
-                    $this->sendResponse(400, "El email del token no coincide con el proporcionado", null, false);
-                }
-            } else {
-                $this->sendResponse(400, "Proveedor de autenticación no soportado", null, false);
-            }
-            
             // Buscar usuario existente por email
-            $user = $this->userRepository->findByEmail($externalLoginModel->email);
+            $user = $this->userRepository->findByEmail($email);
             
             if ($user) {
-                // Usuario existente - vincular cuenta externa si no está vinculada
-                $loginExistente = $this->userRepository->findExternalLogin($user->id, $externalLoginModel->provider);
+                // Usuario existe, actualizar información si es necesario
+                $updated = false;
                 
-                if (!$loginExistente) {
-                    // Vincular cuenta externa
-                    $externalLoginRecord = [
-                        'user_id' => $user->id,
-                        'login_provider' => $externalLoginModel->provider,
-                        'provider_key' => $externalLoginModel->providerKey,
-                        'provider_display_name' => $googleUserInfo['name'] ?? $externalLoginModel->provider
-                    ];
-                    
-                    if (!$this->userRepository->addExternalLogin($externalLoginRecord)) {
-                        error_log("Error vinculando cuenta externa para usuario: " . $user->id);
-                    }
+                // Actualizar nombre si está vacío o es diferente
+                if (empty($user->name) && !empty($name)) {
+                    $user->name = $name;
+                    $updated = true;
                 }
                 
-                // Verificar que el usuario puede hacer login
-                $loginCheck = AuthService::canLogin($user);
-                if (!$loginCheck['can_login']) {
-                    $this->sendResponse(401, $loginCheck['reason'], null, false);
+                // Actualizar imagen de perfil si está vacía o es diferente
+                if (empty($user->profileImage) && !empty($picture)) {
+                    $user->profileImage = $picture;
+                    $updated = true;
                 }
                 
-                // Si el email no está confirmado y viene de Google, confirmarlo automáticamente
-                if (!$user->emailConfirmed && $googleUserInfo['email_verified']) {
+                // Marcar email como confirmado si no lo está (login con Google implica email verificado)
+                if (!$user->emailConfirmed) {
                     $user->emailConfirmed = true;
+                    $updated = true;
+                }
+                
+                // Guardar cambios si hay actualizaciones
+                if ($updated) {
                     $this->userRepository->update($user);
                 }
                 
+                return $user;
             } else {
-                // Usuario nuevo - crear cuenta automáticamente
+                // Usuario no existe, crear nuevo usuario
+                require_once 'models/User.php';
+                
                 $newUser = new User();
-                $newUser->generateId();
-                $newUser->email = $externalLoginModel->email;
-                $newUser->nick = $this->generateNickFromEmail($externalLoginModel->email);
-                $newUser->name = $googleUserInfo['given_name'] ?? '';
-                $newUser->surname1 = $googleUserInfo['family_name'] ?? '';
-                $newUser->emailConfirmed = $googleUserInfo['email_verified'] ?? false;
-                $newUser->lockout_enabled = false;
-                $newUser->access_failed_count = 0;
-                $newUser->two_factor_enabled = false;
-                $newUser->phone_number_confirmed = false;
-                $newUser->created_at = date('Y-m-d H:i:s');
-                $newUser->security_stamp = bin2hex(random_bytes(16));
                 
-                // No establecer contraseña para cuentas externas
-                $newUser->passwordHash = '';
+                // Generar ID único (misma lógica que Register::generateId())
+                $newUser->id = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+                    mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+                    mt_rand(0, 0xffff),
+                    mt_rand(0, 0x0fff) | 0x4000,
+                    mt_rand(0, 0x3fff) | 0x8000,
+                    mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+                );
                 
-                // Crear usuario
+                $newUser->email = $email;
+                $newUser->name = $name ?: '';
+                $newUser->nick = $this->generateNickFromEmail($email);
+                $newUser->profileImage = $picture ?: '';
+                $newUser->emailConfirmed = true; // Google implica email verificado
+                $newUser->passwordHash = ''; // Sin contraseña para cuentas de Google
+                
+                // Crear usuario en la base de datos
                 if ($this->userRepository->create($newUser)) {
-                    // Agregar login externo
-                    $externalLoginRecord = [
-                        'user_id' => $newUser->id,
-                        'login_provider' => $externalLoginModel->provider,
-                        'provider_key' => $externalLoginModel->providerKey,
-                        'provider_display_name' => $googleUserInfo['name'] ?? $externalLoginModel->provider
-                    ];
-                    
-                    if (!$this->userRepository->addExternalLogin($externalLoginRecord)) {
-                        error_log("Error agregando login externo para nuevo usuario: " . $newUser->id);
-                    }
-                    
-                    // Enviar email de bienvenida
-                    $emailService = new EmailService();
-                    $welcomeResult = $emailService->sendWelcomeEmail($newUser->email, $newUser->name);
-                    
-                    $user = $newUser;
+                    return $newUser;
                 } else {
-                    $this->sendResponse(500, "Error creando usuario con cuenta externa", null, false);
+                    error_log("Error creando usuario para login con Google: " . $email);
+                    return null;
                 }
             }
             
-            // Generar JWT
-            $expiration = 86400; // 1 día por defecto para login externo
-            $jwtPayload = AuthService::generateJwtPayload($user, $expiration);
-            $token = $this->jwt->generateTokenFromPayload($jwtPayload);
-            
-            // Establecer cookie
-            $this->jwt->setCookie($token, 'auth_token', $expiration);
-            
-            // Respuesta exitosa
-            $this->sendResponse(200, "Login externo exitoso", [
-                'user' => [
-                    'id' => $user->id,
-                    'email' => $user->email,
-                    'nick' => $user->nick,
-                    'name' => $user->name,
-                    'emailConfirmed' => $user->emailConfirmed
-                ],
-                'provider' => $externalLoginModel->provider,
-                'isNewUser' => !isset($loginExistente)
-            ], true);
-            
         } catch (Exception $e) {
-            error_log("Error en externalLogin: " . $e->getMessage());
-            $this->sendResponse(500, "Error interno del servidor", null, false);
+            error_log("Error en verifyUser: " . $e->getMessage());
+            return null;
         }
     }
-
+    
     /**
      * Genera un nick único basado en el email
      * Método auxiliar para cuentas externas

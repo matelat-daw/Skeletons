@@ -126,9 +126,36 @@ export class AuthService {
       `${this.API_URL}Auth/GoogleLogin`,
       { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) }
     );
-    // sessionStorage.setItem('auth_token', responseText);
+    
+    // Parsear la respuesta para obtener el token
+    const responseData = JSON.parse(responseText);
+    const localToken = responseData.data?.token || responseText;
+    
+    // Guardar token en sessionStorage y signal
+    sessionStorage.setItem('auth_token', localToken);
     sessionStorage.setItem('login_method', 'google');
-    this.token.set(responseText);
+    this.token.set(localToken);
+    
+    // Guardar información del usuario si está disponible
+    if (responseData.data?.nick) {
+      const user: User = {
+        nick: responseData.data.nick,
+        email: responseData.data.email,
+        name: responseData.data.name,
+        surname1: '', // No disponible en la respuesta
+        surname2: '', // No disponible en la respuesta
+        phoneNumber: '', // No disponible en la respuesta
+        bday: '', // No disponible en la respuesta
+        profileImage: responseData.data.profileImage || '',
+        about: '', // No disponible en la respuesta
+        userLocation: '', // No disponible en la respuesta
+        publicProfile: true, // Valor por defecto
+        comments: [], // No disponible en la respuesta
+        favorites: [] // No disponible en la respuesta
+      };
+      this.user.set(user);
+      this.profileImage.set(responseData.data.profileImage || '');
+    }
   }
 
   async logout(): Promise<void> {

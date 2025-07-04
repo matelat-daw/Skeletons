@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Google Login - Nexus API</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .container { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        button { background: #4285f4; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #3367d6; }
+        textarea { width: 100%; height: 60px; margin: 10px 0; font-family: monospace; }
+        input[type="text"] { width: 100%; padding: 8px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Prueba Google Login - Nexus API</h1>
+        <p>Esta página permite probar el endpoint de Google Login sin necesidad de un token real de Google.</p>
+        
+        <h3>Configuración:</h3>
+        <label>API URL:</label>
+        <input type="text" id="apiUrl" value="http://localhost:8080/api/Auth/GoogleLogin" />
+        
+        <label>Token de Google (simulado):</label>
+        <textarea id="googleToken" placeholder="Aquí irías el token JWT real de Google...">eyJhbGciOiJSUzI1NiIsImtpZCI6IjdkYzEyMzQ1ZTY3ODkwYWIxMjM0NTY3ODkwYWJjZGVmMDEyMzQ1NjciLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhdWQiOiJ0dV9jbGllbnRfaWRfYXF1aS5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsInN1YiI6IjEyMzQ1Njc4OTAiLCJlbWFpbCI6InVzdWFyaW8uZGVwcnVlYmFAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5hbWUiOiJVc3VhcmlvIGRlIFBydWViYSIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQWNIVHRlU1QxMjMiLCJpYXQiOjE3MjAwNzg5MTYsImV4cCI6MTcyMDA4MjUxNn0.fake_signature</textarea>
+        
+        <button onclick="testGoogleLogin()">🚀 Probar Google Login</button>
+        <button onclick="testBasicEndpoint()">✅ Probar Endpoint Básico</button>
+        <button onclick="debugGoogleToken()">🔍 Debug Token Google</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function testGoogleLogin() {
+            const resultDiv = document.getElementById('result');
+            const apiUrl = document.getElementById('apiUrl').value;
+            const token = document.getElementById('googleToken').value;
+            
+            resultDiv.innerHTML = '<p>⏳ Probando Google Login...</p>';
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ token: token })
+                });
+                
+                const responseText = await response.text();
+                let responseData;
+                
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch (e) {
+                    responseData = { raw_response: responseText };
+                }
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h4>✅ Google Login Exitoso!</h4>
+                            <pre>${JSON.stringify(responseData, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h4>❌ Error en Google Login (${response.status})</h4>
+                            <pre>${JSON.stringify(responseData, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ Error de Conexión</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testBasicEndpoint() {
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '<p>⏳ Probando endpoint básico...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8080/test');
+                const responseData = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h4>✅ Servidor funcionando correctamente!</h4>
+                            <pre>${JSON.stringify(responseData, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h4>❌ Error del servidor (${response.status})</h4>
+                            <pre>${JSON.stringify(responseData, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ Error de Conexión</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Cargar automáticamente el test básico al cargar la página
+        window.onload = function() {
+            testBasicEndpoint();
+        };
+        
+        async function debugGoogleToken() {
+            const resultDiv = document.getElementById('result');
+            const token = document.getElementById('googleToken').value;
+            
+            resultDiv.innerHTML = '<p>🔍 Analizando token de Google...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/Auth/DebugGoogleToken', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ token: token })
+                });
+                
+                const responseText = await response.text();
+                let responseData;
+                
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch (e) {
+                    responseData = { raw_response: responseText };
+                }
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h4>🔍 Análisis del Token</h4>
+                            <pre>${JSON.stringify(responseData, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h4>❌ Error en análisis del token (${response.status})</h4>
+                            <pre>${JSON.stringify(responseData, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ Error de Conexión</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

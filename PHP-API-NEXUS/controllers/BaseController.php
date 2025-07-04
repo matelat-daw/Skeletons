@@ -45,21 +45,39 @@ abstract class BaseController {
     }
     
     /**
-     * Obtiene y valida el token JWT
+     * Obtiene y valida el token JWT (desde cookie o header Authorization)
      */
     protected function requireAuth() {
+        // Intentar obtener token desde cookie primero
         $token = $this->jwt->getTokenFromCookie();
+        $tokenSource = 'cookie';
+        
+        // Si no hay cookie, intentar desde header Authorization
+        if (!$token) {
+            $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+            if (preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+                $token = $matches[1];
+                $tokenSource = 'header';
+            }
+        }
+        
+        // Log para debugging
+        error_log("AUTH DEBUG: Token source: $tokenSource");
+        error_log("AUTH DEBUG: Token present: " . ($token ? 'YES (' . substr($token, 0, 20) . '...)' : 'NO'));
         
         if (!$token) {
+            error_log("AUTH DEBUG: No token found in cookie or Authorization header");
             $this->sendResponse(401, "No hay sesión activa", null, false);
         }
         
         $tokenData = $this->jwt->validateToken($token);
         
         if (!$tokenData) {
+            error_log("AUTH DEBUG: Token validation failed");
             $this->sendResponse(401, "Token inválido o expirado", null, false);
         }
         
+        error_log("AUTH DEBUG: Token validated successfully for user: " . ($tokenData['email'] ?? 'unknown'));
         return $tokenData;
     }
     
