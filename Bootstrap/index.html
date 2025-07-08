@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guitar Shop - Las Mejores Guitarras</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.7/css/bootstrap.min.css" integrity="sha512-fw7f+TcMjTb7bpbLJZlP8g2Y4XcCyFZW8uy8HsRZsH/SwbMw0plKHFHr99DN3l04VsYNwvzicUX/6qurvIxbxw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-guitar me-2"></i>Guitar Shop
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#guitarras">Guitarras</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contacto">Contacto</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="badge bg-danger ms-1">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-4">🎸 Guitar Shop</h1>
+            <p class="lead mb-4">Descubre las mejores guitarras del mundo. Calidad premium al mejor precio.</p>
+            <a href="#guitarras" class="btn btn-custom btn-lg">
+                <i class="fas fa-music me-2"></i>Ver Guitarras
+            </a>
+        </div>
+    </section>
+
+    <!-- Guitarras Section -->
+    <section id="guitarras" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold text-dark">Nuestras Guitarras</h2>
+                <p class="text-muted">Selección premium de instrumentos de alta calidad</p>
+            </div>
+            
+            <!-- Grid Responsive: 1 columna en móvil, 3 en desktop -->
+            <div class="row g-4">
+                <!-- Guitarra 1 -->
+                <div class="col-12 col-lg-4">
+                    <div class="card guitar-card border-0 shadow-sm h-100">
+                        <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=250&fit=crop" 
+                             class="card-img-top guitar-img" alt="Guitarra Acústica Clásica">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold">Guitarra Acústica Clásica</h5>
+                            <p class="card-text text-muted flex-grow-1">
+                                Guitarra acústica de madera de cedro con un sonido cálido y resonante. 
+                                Perfecta para principiantes y profesionales.
+                            </p>
+                            <div class="mb-3">
+                                <span class="original-price me-2">$450</span>
+                                <span class="price">$350</span>
+                            </div>
+                            <div class="d-grid">
+                                <button class="btn btn-custom">
+                                    <i class="fas fa-cart-plus me-2"></i>Agregar al Carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guitarra 2 -->
+                <div class="col-12 col-lg-4">
+                    <div class="card guitar-card border-0 shadow-sm h-100">
+                        <img src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=250&fit=crop" 
+                             class="card-img-top guitar-img" alt="Guitarra Eléctrica Stratocaster">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold">Guitarra Eléctrica Stratocaster</h5>
+                            <p class="card-text text-muted flex-grow-1">
+                                Icónica guitarra eléctrica con pickups single-coil. 
+                                Sonido versátil para rock, blues y pop.
+                            </p>
+                            <div class="mb-3">
+                                <span class="original-price me-2">$800</span>
+                                <span class="price">$650</span>
+                            </div>
+                            <div class="d-grid">
+                                <button class="btn btn-custom">
+                                    <i class="fas fa-cart-plus me-2"></i>Agregar al Carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guitarra 3 -->
+                <div class="col-12 col-lg-4">
+                    <div class="card guitar-card border-0 shadow-sm h-100">
+                        <img src="https://images.unsplash.com/photo-1564186763535-ebb21ef5277f?w=400&h=250&fit=crop" 
+                             class="card-img-top guitar-img" alt="Guitarra Acústica Dreadnought">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold">Guitarra Acústica Dreadnought</h5>
+                            <p class="card-text text-muted flex-grow-1">
+                                Guitarra con cuerpo grande para un sonido potente y profundo. 
+                                Ideal para country y folk.
+                            </p>
+                            <div class="mb-3">
+                                <span class="original-price me-2">$600</span>
+                                <span class="price">$480</span>
+                            </div>
+                            <div class="d-grid">
+                                <button class="btn btn-custom">
+                                    <i class="fas fa-cart-plus me-2"></i>Agregar al Carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guitarra 4 -->
+                <div class="col-12 col-lg-4">
+                    <div class="card guitar-card border-0 shadow-sm h-100">
+                        <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&h=250&fit=crop" 
+                             class="card-img-top guitar-img" alt="Guitarra Eléctrica Les Paul">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold">Guitarra Eléctrica Les Paul</h5>
+                            <p class="card-text text-muted flex-grow-1">
+                                Guitarra de cuerpo sólido con pickups humbucker. 
+                                Sonido potente perfecto para rock y metal.
+                            </p>
+                            <div class="mb-3">
+                                <span class="original-price me-2">$1200</span>
+                                <span class="price">$950</span>
+                            </div>
+                            <div class="d-grid">
+                                <button class="btn btn-custom">
+                                    <i class="fas fa-cart-plus me-2"></i>Agregar al Carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guitarra 5 -->
+                <div class="col-12 col-lg-4">
+                    <div class="card guitar-card border-0 shadow-sm h-100">
+                        <img src="https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=400&h=250&fit=crop" 
+                             class="card-img-top guitar-img" alt="Guitarra Flamenca">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold">Guitarra Flamenca</h5>
+                            <p class="card-text text-muted flex-grow-1">
+                                Guitarra española tradicional con maderas selectas. 
+                                Sonido brillante y percusivo para flamenco.
+                            </p>
+                            <div class="mb-3">
+                                <span class="original-price me-2">$750</span>
+                                <span class="price">$580</span>
+                            </div>
+                            <div class="d-grid">
+                                <button class="btn btn-custom">
+                                    <i class="fas fa-cart-plus me-2"></i>Agregar al Carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guitarra 6 -->
+                <div class="col-12 col-lg-4">
+                    <div class="card guitar-card border-0 shadow-sm h-100">
+                        <img src="https://images.unsplash.com/photo-1471478331149-c72f17e33c73?w=400&h=250&fit=crop" 
+                             class="card-img-top guitar-img" alt="Guitarra Acústica 12 Cuerdas">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold">Guitarra Acústica 12 Cuerdas</h5>
+                            <p class="card-text text-muted flex-grow-1">
+                                Guitarra de 12 cuerdas con sonido rico y armonioso. 
+                                Perfecta para folk y música experimental.
+                            </p>
+                            <div class="mb-3">
+                                <span class="original-price me-2">$850</span>
+                                <span class="price">$720</span>
+                            </div>
+                            <div class="d-grid">
+                                <button class="btn btn-custom">
+                                    <i class="fas fa-cart-plus me-2"></i>Agregar al Carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-4">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Guitar Shop. Todos los derechos reservados.</p>
+            <div class="mt-2">
+                <a href="#" class="text-white me-3"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-white"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.7/js/bootstrap.min.js" integrity="sha512-zKeerWHHuP3ar7kX2WKBSENzb+GJytFSBL6HrR2nPSR1kOX1qjm+oHooQtbDpDBSITgyl7QXZApvDfDWvKjkUw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</body>
+</html>
