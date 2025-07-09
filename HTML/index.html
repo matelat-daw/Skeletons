@@ -3,42 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Mi Web Personal - Datos Curiosos de Programación | Desarrollador Web</title>
+    
+    <!-- Preload crítico para rendimiento -->
+    <link rel="preload" href="css/style.css" as="style">
+    <link rel="preload" href="js/script.js" as="script">
+    <link rel="preload" href="imgs/logo.webp" as="image">
+    
+    <!-- Meta datos para SEO -->
+    <meta name="description" content="Bienvenido a mi página web personal donde comparto datos curiosos sobre programación, desarrollo web y tecnología. Conoce mi trabajo y experiencia profesional.">
+    <meta name="keywords" content="programación, desarrollo web, datos curiosos, tecnología, desarrollador, portfolio personal, programador">
+    <meta name="author" content="César Matelat - Desarrollador Web">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="es">
+    
+    <!-- Meta datos Open Graph para redes sociales -->
+    <meta property="og:title" content="Mi Web Personal - Datos Curiosos de Programación">
+    <meta property="og:description" content="Descubre datos fascinantes sobre programación y desarrollo web. Portfolio personal de un desarrollador apasionado por la tecnología.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://miwebpersonal.com">
+    <meta property="og:image" content="https://miwebpersonal.com/imgs/logo.webp">
+    <meta property="og:site_name" content="Mi Web Personal">
+    <meta property="og:locale" content="es_ES">
+    
+    <!-- Meta datos Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Mi Web Personal - Desarrollador Web">
+    <meta name="twitter:description" content="Datos curiosos de programación y mi experiencia como desarrollador web.">
+    <meta name="twitter:image" content="https://miwebpersonal.com/imgs/logo.webp">
+    
+    <!-- Meta datos adicionales -->
+    <meta name="theme-color" content="#0078d7">
+    <meta name="msapplication-TileColor" content="#0078d7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://miwebpersonal.com">
+    
+    <!-- Favicon optimizado -->
+    <link rel="icon" type="image/webp" href="imgs/logo.webp">
+    <link rel="apple-touch-icon" href="imgs/logo.webp">
+    
+    <!-- CSS crítico con media para mejor carga -->
+    <link rel="stylesheet" href="css/style.css" media="all">
 </head>
 <body>
-    <header>
-        <img src="imgs/logo.webp" alt="Logo de la página" id="logo">
-        <h1>Mi Página Web</h1>
-        <div class="header-actions">
-            <button class="btn registro">Registro</button>
-            <button class="btn login">Login</button>
+    <!-- Header principal con estructura semántica optimizada -->
+    <header class="header" role="banner">
+        <img src="imgs/logo.webp" alt="Logo - Mi Web Personal" class="header__logo" id="logo" width="120" height="120">
+        <h1 class="header__title">Mi Página Web</h1>
+        <!-- Botones solo visibles en pantallas grandes (900px+) -->
+        <div class="header__actions">
+            <button 
+                id="theme-toggle" 
+                class="btn btn--icon" 
+                type="button" 
+                aria-label="Cambiar tema claro/oscuro"
+                title="Cambiar tema">
+                <span class="theme-icon theme-icon--light">☀️</span>
+                <span class="theme-icon theme-icon--dark">🌙</span>
+            </button>
+            <button class="btn btn--secondary" type="button" aria-label="Registrarse">Registro</button>
+            <button class="btn btn--primary" type="button" aria-label="Iniciar sesión">Login</button>
         </div>
     </header>
-    <nav>
-        <button id="menu-toggle" aria-label="Abrir menú">&#9776;</button>
-        <ul id="menu">
-            <li><a href="#home">Inicio</a></li>
-            <li><a href="#about">Acerca de</a></li>
-            <li><a href="#contact">Contacto</a></li>
+
+    <!-- Navegación principal con menú hamburguesa -->
+    <nav class="nav" role="navigation" aria-label="Navegación principal">
+        <button 
+            id="menu-toggle" 
+            class="nav__toggle" 
+            type="button"
+            aria-label="Abrir menú de navegación"
+            aria-expanded="false"
+            aria-controls="menu">
+            <span class="nav__toggle-icon"></span>
+        </button>
+        
+        <ul id="menu" class="nav__menu" role="menubar">
+            <li class="nav__item" role="none">
+                <a href="#home" class="nav__link" role="menuitem">Inicio</a>
+            </li>
+            <li class="nav__item" role="none">
+                <a href="#about" class="nav__link" role="menuitem">Acerca de</a>
+            </li>
+            <li class="nav__item" role="none">
+                <a href="#contact" class="nav__link" role="menuitem">Contacto</a>
+            </li>
+            <!-- Botones para tablet (576px-899px) -->
+            <li class="nav__item nav__item--tablet" role="none">
+                <button 
+                    class="btn btn--icon nav-btn theme-toggle-mobile" 
+                    type="button" 
+                    aria-label="Cambiar tema claro/oscuro">
+                    <span class="theme-icon theme-icon--light">☀️</span>
+                    <span class="theme-icon theme-icon--dark">🌙</span>
+                </button>
+            </li>
+            <li class="nav__item nav__item--tablet" role="none">
+                <button class="btn btn--secondary nav-btn" type="button">Registro</button>
+            </li>
+            <li class="nav__item nav__item--tablet" role="none">
+                <button class="btn btn--primary nav-btn" type="button">Login</button>
+            </li>
+            <!-- Botones para móvil (≤575px) dentro de hamburguesa -->
+            <li class="nav__item nav__item--mobile" role="none">
+                <button 
+                    class="btn btn--icon nav-btn theme-toggle-mobile" 
+                    type="button" 
+                    aria-label="Cambiar tema claro/oscuro">
+                    <span class="theme-icon theme-icon--light">☀️</span>
+                    <span class="theme-icon theme-icon--dark">🌙</span>
+                </button>
+            </li>
+            <li class="nav__item nav__item--mobile" role="none">
+                <button class="btn btn--secondary nav-btn" type="button">Registro</button>
+            </li>
+            <li class="nav__item nav__item--mobile" role="none">
+                <button class="btn btn--primary nav-btn" type="button">Login</button>
+            </li>
         </ul>
     </nav>
-    <section id="home">
-        <h2>Inicio</h2>
-        <p>Esta es la sección de inicio de mi página web.</p>
-    </section>
-    <section id="about">
-        <h2>Acerca de</h2>
-        <p>Aquí encontrarás información sobre mí y mi trabajo.</p>
-    </section>
-    <section id="contact">
-        <h2>Contacto</h2>
-        <p>Puedes contactarme a través de este formulario.</p>
-        <footer>
-            <p>&copy; 2025 Mi Página Web. Todos los derechos reservados.</p>
-            <p>Desarrollado por [Tu Nombre]</p>
-        </footer>
-    </section>
-    <script src="js/script.js"></script>
+
+    <!-- Contenido principal -->
+    <main class="main" role="main">
+        <section id="home" class="section section--hero">
+            <div class="section__container">
+                <h2 class="section__title">Inicio</h2>
+                <p class="section__text">Esta es la sección de inicio de mi página web.</p>
+            </div>
+        </section>
+        
+        <section id="about" class="section">
+            <div class="section__container">
+                <h2 class="section__title">Acerca de</h2>
+                <p class="section__text">Aquí encontrarás información sobre mí y mi trabajo.</p>
+            </div>
+        </section>
+        
+        <section id="contact" class="section">
+            <div class="section__container">
+                <h2 class="section__title">Contacto</h2>
+                <p class="section__text">Puedes contactarme a través de este formulario.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="footer__container">
+            <p class="footer__text">&copy; 2025 Mi Página Web. Todos los derechos reservados.</p>
+            <p class="footer__credit">Desarrollado por César Matelat</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript optimizado con defer para mejor performance -->
+    <script src="js/script.js" defer></script>
 </body>
 </html>
