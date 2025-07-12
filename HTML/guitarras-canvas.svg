@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+     width="1200" height="800" viewBox="0 0 1200 800">
+  
+  <!-- Definiciones -->
+  <defs>
+    <!-- Gradiente de fondo -->
+    <linearGradient id="backgroundGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Gradiente del botón -->
+    <linearGradient id="buttonGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ecdc4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#45b7b8;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Sombra para la imagen -->
+    <filter id="imageShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="20" stdDeviation="30" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+    
+    <!-- Sombra para botones -->
+    <filter id="buttonShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#4ecdc4" flood-opacity="0.3"/>
+    </filter>
+    
+    <!-- Imagen de guitarra (placeholder) -->
+    <pattern id="guitarImage" x="0" y="0" width="100%" height="100%">
+      <rect width="100%" height="100%" fill="#2c3e50"/>
+      <!-- Simulación de guitarra con formas SVG -->
+      <ellipse cx="50%" cy="45%" rx="25%" ry="15%" fill="#8b4513" opacity="0.8"/>
+      <rect x="45%" y="30%" width="10%" height="40%" fill="#654321" opacity="0.9"/>
+      <circle cx="50%" cy="45%" r="8%" fill="#000" opacity="0.3"/>
+      <!-- Cuerdas -->
+      <line x1="45%" y1="20%" x2="45%" y2="70%" stroke="#c0c0c0" stroke-width="1"/>
+      <line x1="47%" y1="20%" x2="47%" y2="70%" stroke="#c0c0c0" stroke-width="1"/>
+      <line x1="49%" y1="20%" x2="49%" y2="70%" stroke="#c0c0c0" stroke-width="1"/>
+      <line x1="51%" y1="20%" x2="51%" y2="70%" stroke="#c0c0c0" stroke-width="1"/>
+      <line x1="53%" y1="20%" x2="53%" y2="70%" stroke="#c0c0c0" stroke-width="1"/>
+      <line x1="55%" y1="20%" x2="55%" y2="70%" stroke="#c0c0c0" stroke-width="1"/>
+      <!-- Manos tocando -->
+      <ellipse cx="35%" cy="50%" rx="8%" ry="12%" fill="#deb887" opacity="0.7"/>
+      <ellipse cx="65%" cy="40%" rx="6%" ry="10%" fill="#deb887" opacity="0.7"/>
+    </pattern>
+  </defs>
+  
+  <!-- Fondo principal -->
+  <rect width="100%" height="100%" fill="url(#backgroundGradient)"/>
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="100%" height="80" fill="rgba(26,26,46,0.95)" opacity="0.95"/>
+  <line x1="0" y1="80" x2="1200" y2="80" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  
+  <!-- Logo -->
+  <text x="60" y="50" font-family="Arial, sans-serif" font-size="24" font-weight="600" fill="#ffffff">
+    guitarluthier.com
+  </text>
+  
+  <!-- Navegación -->
+  <g id="navigation" transform="translate(400, 0)">
+    <text x="0" y="50" font-family="Arial, sans-serif" font-size="15" font-weight="500" fill="#ffffff">
+      Inicio
+    </text>
+    <rect x="-10" y="55" width="40" height="2" fill="#4ecdc4" rx="1"/>
+    
+    <text x="80" y="50" font-family="Arial, sans-serif" font-size="15" font-weight="500" fill="#b8b8b8">
+      Acerca de
+    </text>
+    
+    <text x="180" y="50" font-family="Arial, sans-serif" font-size="15" font-weight="500" fill="#b8b8b8">
+      Servicios
+    </text>
+    
+    <text x="260" y="50" font-family="Arial, sans-serif" font-size="15" font-weight="500" fill="#b8b8b8">
+      Blog
+    </text>
+    
+    <text x="320" y="50" font-family="Arial, sans-serif" font-size="15" font-weight="500" fill="#b8b8b8">
+      Contacto
+    </text>
+  </g>
+  
+  <!-- Botón CTA Header -->
+  <g id="headerCTA" transform="translate(1050, 20)">
+    <rect x="0" y="0" width="120" height="40" rx="8" fill="url(#buttonGradient)" filter="url(#buttonShadow)"/>
+    <text x="60" y="26" font-family="Arial, sans-serif" font-size="15" font-weight="500" fill="#1a1a2e" text-anchor="middle">
+      Explora Ahora
+    </text>
+  </g>
+  
+  <!-- Contenido Principal -->
+  <g id="heroSection" transform="translate(60, 140)">
+    
+    <!-- Contenido Izquierdo -->
+    <g id="heroContent">
+      
+      <!-- Badge -->
+      <rect x="0" y="0" width="140" height="24" rx="12" fill="rgba(108,117,125,0.2)"/>
+      <text x="70" y="16" font-family="Arial, sans-serif" font-size="12" font-weight="500" fill="#6c757d" text-anchor="middle" letter-spacing="0.5px">
+        CALIDAD SUPERIOR
+      </text>
+      
+      <!-- Título Principal -->
+      <text x="0" y="80" font-family="Arial, sans-serif" font-size="56" font-weight="700" fill="#ffffff" text-anchor="start">
+        <tspan x="0" dy="0">Guitarras</tspan>
+        <tspan x="0" dy="64">Personalizadas</tspan>
+        <tspan x="0" dy="64">Hechas a Mano</tspan>
+        <tspan x="0" dy="64">en España</tspan>
+      </text>
+      
+      <!-- Descripción -->
+      <text x="0" y="340" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#b8b8b8" text-anchor="start">
+        <tspan x="0" dy="0">Descubre la perfección en la fabricación de</tspan>
+        <tspan x="0" dy="28">guitarras Españolas hechas para cada músico,</tspan>
+        <tspan x="0" dy="28">con atención al detalle excepcional.</tspan>
+      </text>
+      
+      <!-- Botón CTA Principal -->
+      <g id="mainCTA" transform="translate(0, 420)">
+        <rect x="0" y="0" width="160" height="50" rx="8" fill="transparent" stroke="#4ecdc4" stroke-width="2" filter="url(#buttonShadow)"/>
+        <text x="80" y="32" font-family="Arial, sans-serif" font-size="18" font-weight="500" fill="#4ecdc4" text-anchor="middle">
+          Explora Ahora
+        </text>
+      </g>
+      
+    </g>
+    
+    <!-- Imagen Derecha -->
+    <g id="heroImage" transform="translate(600, 0)">
+      <rect x="0" y="0" width="480" height="480" rx="16" fill="url(#guitarImage)" filter="url(#imageShadow)"/>
+    </g>
+    
+  </g>
+  
+  <!-- Elementos Interactivos (Canvas Integration) -->
+  <g id="canvasElements" style="cursor: pointer;">
+    
+    <!-- Área clickeable del logo -->
+    <rect x="40" y="20" width="200" height="40" fill="transparent" id="logo-click"/>
+    
+    <!-- Áreas clickeables de navegación -->
+    <rect x="390" y="20" width="50" height="40" fill="transparent" id="nav-inicio"/>
+    <rect x="470" y="20" width="80" height="40" fill="transparent" id="nav-acerca"/>
+    <rect x="570" y="20" width="70" height="40" fill="transparent" id="nav-servicios"/>
+    <rect x="650" y="20" width="40" height="40" fill="transparent" id="nav-blog"/>
+    <rect x="710" y="20" width="70" height="40" fill="transparent" id="nav-contacto"/>
+    
+    <!-- Área clickeable del botón header -->
+    <rect x="1050" y="20" width="120" height="40" fill="transparent" id="header-cta-click"/>
+    
+    <!-- Área clickeable del botón principal -->
+    <rect x="60" y="560" width="160" height="50" fill="transparent" id="main-cta-click"/>
+    
+    <!-- Área clickeable de la imagen -->
+    <rect x="660" y="140" width="480" height="480" fill="transparent" id="image-click"/>
+    
+  </g>
+  
+  <!-- JavaScript embebido para Canvas -->
+  <script type="text/javascript">
+    <![CDATA[
+    
+    // Funcionalidad básica para Canvas Apps
+    (function() {
+      
+      // Configuración
+      const canvasActions = {
+        'logo-click': 'navigate_home',
+        'nav-inicio': 'navigate_inicio', 
+        'nav-acerca': 'navigate_acerca',
+        'nav-servicios': 'navigate_servicios',
+        'nav-blog': 'navigate_blog',
+        'nav-contacto': 'navigate_contacto',
+        'header-cta-click': 'explore_guitars_header',
+        'main-cta-click': 'explore_guitars_main',
+        'image-click': 'view_guitar_details'
+      };
+      
+      // Agregar event listeners
+      Object.keys(canvasActions).forEach(elementId => {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.addEventListener('click', function() {
+            const action = canvasActions[elementId];
+            triggerCanvasAction(action, elementId);
+          });
+          
+          // Hover effects
+          element.addEventListener('mouseenter', function() {
+            this.style.opacity = '0.7';
+          });
+          
+          element.addEventListener('mouseleave', function() {
+            this.style.opacity = '1';
+          });
+        }
+      });
+      
+      // Función para comunicar con Canvas
+      function triggerCanvasAction(action, elementId) {
+        console.log('SVG Canvas Action:', action, 'Element:', elementId);
+        
+        // PostMessage para Canvas Apps
+        if (window.parent && window.parent.postMessage) {
+          window.parent.postMessage({
+            type: 'SVG_CANVAS_ACTION',
+            action: action,
+            element: elementId,
+            timestamp: new Date().toISOString(),
+            source: 'guitar-luthier-svg'
+          }, '*');
+        }
+        
+        // LocalStorage para persistencia
+        localStorage.setItem('lastSVGAction', JSON.stringify({
+          action: action,
+          element: elementId,
+          timestamp: new Date().toISOString()
+        }));
+        
+        // Feedback visual
+        showSVGFeedback(action);
+      }
+      
+      // Feedback visual en SVG
+      function showSVGFeedback(action) {
+        // Crear elemento de feedback
+        const svg = document.querySelector('svg');
+        const feedback = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        
+        feedback.setAttribute('x', '600');
+        feedback.setAttribute('y', '750');
+        feedback.setAttribute('text-anchor', 'middle');
+        feedback.setAttribute('font-family', 'Arial, sans-serif');
+        feedback.setAttribute('font-size', '16');
+        feedback.setAttribute('font-weight', '500');
+        feedback.setAttribute('fill', '#4ecdc4');
+        feedback.setAttribute('opacity', '0');
+        feedback.textContent = `Acción: ${action}`;
+        
+        svg.appendChild(feedback);
+        
+        // Animación de aparición
+        feedback.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => feedback.setAttribute('opacity', '1'), 100);
+        
+        // Auto remove
+        setTimeout(() => {
+          feedback.style.transition = 'opacity 0.3s ease';
+          feedback.setAttribute('opacity', '0');
+          setTimeout(() => feedback.remove(), 300);
+        }, 2000);
+      }
+      
+      // API pública para Canvas
+      window.SVGGuitarApp = {
+        getLastAction: () => JSON.parse(localStorage.getItem('lastSVGAction') || '{}'),
+        performAction: (action) => triggerCanvasAction(action, 'programmatic'),
+        updateContent: (updates) => {
+          // Actualizar texto dinámicamente
+          if (updates.title) {
+            // Actualizar título si es necesario
+            console.log('Updating title:', updates.title);
+          }
+          if (updates.description) {
+            // Actualizar descripción si es necesario
+            console.log('Updating description:', updates.description);
+          }
+        }
+      };
+      
+      // Notificar a Canvas que el SVG está listo
+      setTimeout(() => {
+        if (window.parent && window.parent.postMessage) {
+          window.parent.postMessage({
+            type: 'SVG_READY',
+            timestamp: new Date().toISOString(),
+            capabilities: ['click-tracking', 'visual-feedback', 'programmatic-actions']
+          }, '*');
+        }
+      }, 100);
+      
+    })();
+    
+    ]]>
+  </script>
+  
+</svg>

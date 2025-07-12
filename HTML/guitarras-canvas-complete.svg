@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+     width="1200" height="800" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid meet">
+  
+  <!-- Definiciones: Gradientes, Fuentes y Filtros -->
+  <defs>
+    <!-- Gradiente Principal -->
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    
+    <!-- Gradiente Header -->
+    <linearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:0.95"/>
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:0.95"/>
+    </linearGradient>
+    
+    <!-- Gradiente Botón Primario -->
+    <linearGradient id="btnPrimary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ecdc4"/>
+      <stop offset="100%" style="stop-color:#45b7b8"/>
+    </linearGradient>
+    
+    <!-- Filtro de Sombra -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="8" stdDeviation="15" flood-color="rgba(0,0,0,0.3)"/>
+    </filter>
+    
+    <!-- Filtro de Sombra Suave -->
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="rgba(78,205,196,0.3)"/>
+    </filter>
+    
+    <!-- Máscara para imagen -->
+    <clipPath id="imageClip">
+      <rect x="680" y="200" width="480" height="350" rx="16" ry="16"/>
+    </clipPath>
+    
+    <!-- Imagen de guitarra como patrón -->
+    <pattern id="guitarImage" x="0" y="0" width="1" height="1" patternUnits="objectBoundingBox">
+      <image href="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=1170&amp;q=80" 
+             x="0" y="0" width="480" height="350" preserveAspectRatio="xMidYMid slice"/>
+    </pattern>
+  </defs>
+  
+  <!-- Fondo Principal -->
+  <rect width="100%" height="100%" fill="url(#mainGradient)"/>
+  
+  <!-- Header -->
+  <g id="header">
+    <!-- Fondo Header -->
+    <rect x="0" y="0" width="1200" height="80" fill="url(#headerGradient)" opacity="0.95"/>
+    <line x1="0" y1="79" x2="1200" y2="79" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    
+    <!-- Logo -->
+    <text x="40" y="50" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="600" 
+          fill="#ffffff" class="logo">guitarluthier.com</text>
+    
+    <!-- Navegación -->
+    <g id="navigation" class="nav-container">
+      <text x="280" y="50" font-family="system-ui, sans-serif" font-size="15" font-weight="500" 
+            fill="#ffffff" class="nav-link active" data-target="inicio">Inicio</text>
+      <line x1="285" y1="58" x2="305" y2="58" stroke="#4ecdc4" stroke-width="2" stroke-linecap="round"/>
+      
+      <text x="380" y="50" font-family="system-ui, sans-serif" font-size="15" font-weight="500" 
+            fill="#b8b8b8" class="nav-link" data-target="acerca">Acerca de</text>
+      
+      <text x="500" y="50" font-family="system-ui, sans-serif" font-size="15" font-weight="500" 
+            fill="#b8b8b8" class="nav-link" data-target="servicios">Servicios</text>
+      
+      <text x="620" y="50" font-family="system-ui, sans-serif" font-size="15" font-weight="500" 
+            fill="#b8b8b8" class="nav-link" data-target="blog">Blog</text>
+      
+      <text x="720" y="50" font-family="system-ui, sans-serif" font-size="15" font-weight="500" 
+            fill="#b8b8b8" class="nav-link" data-target="contacto">Contacto</text>
+    </g>
+    
+    <!-- Botón Header CTA -->
+    <g id="headerCTA" class="btn-primary" style="cursor:pointer">
+      <rect x="1000" y="25" width="160" height="40" rx="8" fill="url(#btnPrimary)" filter="url(#softShadow)"/>
+      <text x="1080" y="48" font-family="system-ui, sans-serif" font-size="15" font-weight="500" 
+            fill="#1a1a2e" text-anchor="middle">Explora Ahora</text>
+    </g>
+    
+    <!-- Hamburger Menu (Mobile) -->
+    <g id="mobileToggle" style="display:none" class="mobile-menu">
+      <rect x="1120" y="30" width="25" height="3" fill="#ffffff" rx="1"/>
+      <rect x="1120" y="36" width="25" height="3" fill="#ffffff" rx="1"/>
+      <rect x="1120" y="42" width="25" height="3" fill="#ffffff" rx="1"/>
+    </g>
+  </g>
+  
+  <!-- Sección Hero -->
+  <g id="hero" transform="translate(0, 80)">
+    <!-- Contenido Textual -->
+    <g id="heroContent" transform="translate(40, 120)">
+      <!-- Badge -->
+      <rect x="0" y="0" width="140" height="28" rx="14" fill="rgba(108,117,125,0.2)"/>
+      <text x="70" y="18" font-family="system-ui, sans-serif" font-size="11" font-weight="500" 
+            fill="#6c757d" text-anchor="middle" letter-spacing="0.5px">CALIDAD SUPERIOR</text>
+      
+      <!-- Título Principal -->
+      <text x="0" y="80" font-family="system-ui, sans-serif" font-size="42" font-weight="700" 
+            fill="#ffffff" class="hero-title">
+        <tspan x="0" dy="0">Guitarras Personalizadas</tspan>
+        <tspan x="0" dy="50">Hechas a Mano</tspan>
+        <tspan x="0" dy="50">en España</tspan>
+      </text>
+      
+      <!-- Descripción -->
+      <text x="0" y="250" font-family="system-ui, sans-serif" font-size="18" font-weight="400" 
+            fill="#b8b8b8" class="hero-description">
+        <tspan x="0" dy="0">Descubre la perfección en la fabricación</tspan>
+        <tspan x="0" dy="25">de guitarras Españolas hechas para cada</tspan>
+        <tspan x="0" dy="25">músico, con atención al detalle excepcional.</tspan>
+      </text>
+      
+      <!-- Botón CTA Principal -->
+      <g id="heroCTA" class="btn-secondary" style="cursor:pointer" transform="translate(0, 320)">
+        <rect x="0" y="0" width="180" height="50" rx="8" fill="transparent" 
+              stroke="#4ecdc4" stroke-width="2"/>
+        <text x="90" y="32" font-family="system-ui, sans-serif" font-size="17" font-weight="500" 
+              fill="#4ecdc4" text-anchor="middle">Explora Ahora</text>
+      </g>
+    </g>
+    
+    <!-- Imagen de Guitarra -->
+    <g id="heroImage" transform="translate(680, 120)">
+      <rect x="0" y="0" width="480" height="350" rx="16" fill="url(#guitarImage)" 
+            filter="url(#shadow)" clip-path="url(#imageClip)"/>
+      
+      <!-- Overlay sutil -->
+      <rect x="0" y="0" width="480" height="350" rx="16" fill="rgba(0,0,0,0.1)" 
+            clip-path="url(#imageClip)"/>
+    </g>
+  </g>
+  
+  <!-- Toast Notification (Inicialmente oculto) -->
+  <g id="toastNotification" opacity="0" transform="translate(1200, 120)">
+    <rect x="0" y="0" width="280" height="60" rx="8" fill="#4ecdc4" filter="url(#softShadow)"/>
+    <text x="140" y="35" font-family="system-ui, sans-serif" font-size="14" font-weight="500" 
+          fill="#1a1a2e" text-anchor="middle" id="toastText">¡Explorando guitarras personalizadas!</text>
+  </g>
+  
+  <!-- Elementos de Interactividad -->
+  <script type="text/javascript">
+    <![CDATA[
+    (function() {
+      'use strict';
+      
+      // Variables globales
+      const SVG_NS = 'http://www.w3.org/2000/svg';
+      let currentSection = 'inicio';
+      
+      // Utilidades
+      const $ = {
+        qs: selector => document.querySelector(selector),
+        qsa: selector => document.querySelectorAll(selector),
+        create: (tag, attrs = {}) => {
+          const el = document.createElementNS(SVG_NS, tag);
+          Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+          return el;
+        }
+      };
+      
+      // Manejo de navegación
+      const Navigation = {
+        init() {
+          const navLinks = $.qsa('.nav-link');
+          navLinks.forEach(link => {
+            link.addEventListener('click', this.handleNavClick.bind(this));
+            link.style.cursor = 'pointer';
+          });
+        },
+        
+        handleNavClick(e) {
+          const target = e.target.getAttribute('data-target');
+          this.setActiveSection(target);
+          this.triggerCanvasAction('navigate', { section: target });
+        },
+        
+        setActiveSection(section) {
+          // Remover active de todos
+          $.qsa('.nav-link').forEach(link => {
+            link.setAttribute('fill', '#b8b8b8');
+            link.classList.remove('active');
+          });
+          
+          // Activar el seleccionado
+          const activeLink = $.qs(`[data-target="${section}"]`);
+          if (activeLink) {
+            activeLink.setAttribute('fill', '#ffffff');
+            activeLink.classList.add('active');
+            currentSection = section;
+          }
+          
+          // Actualizar indicador
+          this.updateIndicator(section);
+        },
+        
+        updateIndicator(section) {
+          const indicators = $.qsa('line[stroke="#4ecdc4"]');
+          indicators.forEach(line => line.remove());
+          
+          const activeLink = $.qs(`[data-target="${section}"]`);
+          if (activeLink) {
+            const x = parseFloat(activeLink.getAttribute('x'));
+            const line = $.create('line', {
+              x1: x + 5, y1: 58, x2: x + 25, y2: 58,
+              stroke: '#4ecdc4', 'stroke-width': 2, 'stroke-linecap': 'round'
+            });
+            activeLink.parentNode.appendChild(line);
+          }
+        }
+      };
+      
+      // Manejo de botones CTA
+      const CTAButtons = {
+        init() {
+          const buttons = $.qsa('.btn-primary, .btn-secondary');
+          buttons.forEach(btn => {
+            btn.addEventListener('click', this.handleClick.bind(this));
+            btn.style.cursor = 'pointer';
+            this.addHoverEffects(btn);
+          });
+        },
+        
+        handleClick(e) {
+          const button = e.currentTarget;
+          const text = button.querySelector('text').textContent;
+          
+          if (text === 'Explora Ahora') {
+            this.showToast('¡Explorando guitarras personalizadas!');
+            this.triggerCanvasAction('explore_guitars');
+          }
+        },
+        
+        addHoverEffects(button) {
+          const rect = button.querySelector('rect');
+          const originalFill = rect.getAttribute('fill');
+          const originalStroke = rect.getAttribute('stroke');
+          
+          button.addEventListener('mouseenter', () => {
+            if (button.classList.contains('btn-primary')) {
+              rect.setAttribute('fill', '#45b7b8');
+              button.style.transform = 'translateY(-2px)';
+            } else {
+              rect.setAttribute('fill', '#4ecdc4');
+              button.querySelector('text').setAttribute('fill', '#1a1a2e');
+            }
+          });
+          
+          button.addEventListener('mouseleave', () => {
+            rect.setAttribute('fill', originalFill);
+            if (originalStroke) rect.setAttribute('stroke', originalStroke);
+            button.style.transform = 'translateY(0)';
+            if (button.classList.contains('btn-secondary')) {
+              button.querySelector('text').setAttribute('fill', '#4ecdc4');
+            }
+          });
+        },
+        
+        showToast(message) {
+          const toast = $.qs('#toastNotification');
+          const text = $.qs('#toastText');
+          
+          text.textContent = message;
+          
+          // Animación de entrada
+          toast.style.transition = 'all 0.3s ease';
+          toast.setAttribute('opacity', '1');
+          toast.setAttribute('transform', 'translate(900, 120)');
+          
+          // Auto-hide después de 3 segundos
+          setTimeout(() => {
+            toast.setAttribute('opacity', '0');
+            toast.setAttribute('transform', 'translate(1200, 120)');
+          }, 3000);
+        },
+        
+        triggerCanvasAction(action, data = {}) {
+          console.log('Canvas Action:', action, data);
+          
+          // PostMessage para Canvas Apps
+          if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({
+              type: 'CANVAS_ACTION',
+              action: action,
+              data: data,
+              timestamp: new Date().toISOString(),
+              source: 'guitar-luthier-svg'
+            }, '*');
+          }
+          
+          // Almacenar en localStorage
+          try {
+            localStorage.setItem('lastAction', JSON.stringify({
+              action: action,
+              data: data,
+              timestamp: new Date().toISOString()
+            }));
+          } catch (e) {
+            console.warn('localStorage not available:', e);
+          }
+        }
+      };
+      
+      // Efectos de hover para elementos
+      const HoverEffects = {
+        init() {
+          // Logo hover
+          const logo = $.qs('.logo');
+          if (logo) {
+            logo.style.cursor = 'pointer';
+            logo.addEventListener('mouseenter', () => logo.setAttribute('fill', '#4ecdc4'));
+            logo.addEventListener('mouseleave', () => logo.setAttribute('fill', '#ffffff'));
+          }
+          
+          // Hero image hover
+          const heroImage = $.qs('#heroImage rect');
+          if (heroImage) {
+            heroImage.style.cursor = 'pointer';
+            heroImage.addEventListener('mouseenter', () => {
+              heroImage.style.transform = 'scale(1.05)';
+              heroImage.style.transition = 'transform 0.6s ease';
+            });
+            heroImage.addEventListener('mouseleave', () => {
+              heroImage.style.transform = 'scale(1)';
+            });
+          }
+        }
+      };
+      
+      // Integración con Canvas Apps
+      const CanvasIntegration = {
+        init() {
+          // Escuchar mensajes de Canvas
+          window.addEventListener('message', this.handleCanvasMessage.bind(this));
+          
+          // Notificar que el SVG está listo
+          if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({
+              type: 'SVG_READY',
+              timestamp: new Date().toISOString(),
+              capabilities: [
+                'navigation',
+                'cta-actions',
+                'hover-effects',
+                'responsive-design',
+                'postmessage-api'
+              ]
+            }, '*');
+          }
+        },
+        
+        handleCanvasMessage(event) {
+          const { data } = event;
+          
+          if (data.type === 'CANVAS_COMMAND') {
+            switch (data.command) {
+              case 'UPDATE_CONTENT':
+                this.updateContent(data.payload);
+                break;
+              case 'TRIGGER_ACTION':
+                CTAButtons.triggerCanvasAction(data.payload.action, data.payload.data);
+                break;
+              case 'SET_SECTION':
+                Navigation.setActiveSection(data.payload.section);
+                break;
+            }
+          }
+        },
+        
+        updateContent(payload) {
+          if (payload.title) {
+            const titleElement = $.qs('.hero-title');
+            if (titleElement) {
+              // Actualizar título con múltiples líneas
+              const lines = payload.title.split(' ');
+              const tspans = titleElement.querySelectorAll('tspan');
+              tspans.forEach((tspan, index) => {
+                if (lines[index]) tspan.textContent = lines[index];
+              });
+            }
+          }
+          
+          if (payload.description) {
+            const descElement = $.qs('.hero-description');
+            if (descElement) {
+              // Actualizar descripción con múltiples líneas
+              const lines = payload.description.match(/.{1,40}(\s|$)/g) || [payload.description];
+              const tspans = descElement.querySelectorAll('tspan');
+              tspans.forEach((tspan, index) => {
+                if (lines[index]) tspan.textContent = lines[index].trim();
+              });
+            }
+          }
+        }
+      };
+      
+      // Animaciones
+      const Animations = {
+        init() {
+          this.addFadeInAnimations();
+        },
+        
+        addFadeInAnimations() {
+          const animatedElements = [
+            { selector: '#heroContent rect', delay: 0 },
+            { selector: '.hero-title', delay: 0.1 },
+            { selector: '.hero-description', delay: 0.2 },
+            { selector: '#heroCTA', delay: 0.3 },
+            { selector: '#heroImage', delay: 0.4 }
+          ];
+          
+          animatedElements.forEach(({ selector, delay }) => {
+            const element = $.qs(selector);
+            if (element) {
+              element.style.opacity = '0';
+              element.style.transform = 'translateY(30px)';
+              element.style.transition = 'all 0.8s ease';
+              
+              setTimeout(() => {
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+              }, delay * 1000);
+            }
+          });
+        }
+      };
+      
+      // API Pública para Canvas Apps
+      window.GuitarSVGApp = {
+        // Obtener datos de la página
+        getPageData() {
+          return {
+            currentSection: currentSection,
+            title: $.qs('.hero-title')?.textContent || '',
+            description: $.qs('.hero-description')?.textContent || ''
+          };
+        },
+        
+        // Realizar acciones
+        performAction(type, data = {}) {
+          switch (type) {
+            case 'show-notification':
+              CTAButtons.showToast(data.message || 'Acción realizada');
+              break;
+            case 'trigger-cta':
+              CTAButtons.triggerCanvasAction(data.action || 'generic_action', data);
+              break;
+            case 'navigate-to':
+              Navigation.setActiveSection(data.section || 'inicio');
+              break;
+            case 'update-content':
+              CanvasIntegration.updateContent(data);
+              break;
+          }
+        },
+        
+        // Estado de la aplicación
+        getState() {
+          return {
+            ready: true,
+            currentSection: currentSection,
+            timestamp: new Date().toISOString()
+          };
+        }
+      };
+      
+      // Inicialización
+      function init() {
+        console.log('🎸 Guitar SVG Canvas Ready');
+        
+        Navigation.init();
+        CTAButtons.init();
+        HoverEffects.init();
+        CanvasIntegration.init();
+        Animations.init();
+        
+        // Marcar como listo
+        document.body?.classList?.add('svg-app-ready');
+      }
+      
+      // Auto-inicialización
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+    ]]>
+  </script>
+  
+  <!-- Estilos CSS embebidos adicionales -->
+  <style type="text/css">
+    <![CDATA[
+    .nav-link { transition: fill 0.3s ease; }
+    .btn-primary, .btn-secondary { transition: all 0.3s ease; }
+    .logo { transition: fill 0.3s ease; }
+    #heroImage rect { transition: transform 0.6s ease; }
+    #toastNotification { transition: all 0.3s ease; }
+    
+    /* Hover states */
+    .nav-link:hover { fill: #ffffff !important; }
+    .btn-primary:hover rect { fill: #45b7b8 !important; }
+    .btn-secondary:hover rect { fill: #4ecdc4 !important; }
+    .btn-secondary:hover text { fill: #1a1a2e !important; }
+    .logo:hover { fill: #4ecdc4 !important; }
+    
+    /* Responsive adjustments para viewBox */
+    @media (max-width: 768px) {
+      #navigation { display: none; }
+      #mobileToggle { display: block !important; }
+    }
+    ]]>
+  </style>
+  
+  <!-- Áreas de interacción invisibles para Canvas Apps -->
+  <g id="interactionAreas" opacity="0">
+    <!-- Área del header -->
+    <rect x="0" y="0" width="1200" height="80" fill="transparent" class="interaction-header"/>
+    
+    <!-- Área del contenido principal -->
+    <rect x="0" y="80" width="1200" height="720" fill="transparent" class="interaction-main"/>
+    
+    <!-- Área específica de botones -->
+    <rect x="1000" y="25" width="160" height="40" fill="transparent" class="interaction-cta-header"/>
+    <rect x="40" y="400" width="180" height="50" fill="transparent" class="interaction-cta-hero"/>
+    
+    <!-- Área de navegación -->
+    <rect x="280" y="30" width="440" height="40" fill="transparent" class="interaction-navigation"/>
+  </g>
+  
+</svg>
