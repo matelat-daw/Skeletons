@@ -1,0 +1,838 @@
+/* COLORES CORPORATIVOS DE CANARIAS - MODO CLARO Y OSCURO */
+:root {
+    /* Colores principales de la bandera canaria */
+    --canarias-blue: #0066CC;
+    --canarias-blue-dark: #004499;
+    --canarias-blue-light: #3388DD;
+    --canarias-yellow: #FFD700;
+    --canarias-yellow-dark: #E6C200;
+    --canarias-yellow-light: #FFF033;
+    --canarias-white: #FFFFFF;
+    
+    /* Colores complementarios para economía circular */
+    --eco-green: #2E8B57;
+    --eco-green-light: #3CB371;
+    --eco-earth: #8B4513;
+    --eco-ocean: #008080;
+    
+    /* MODO CLARO (por defecto) */
+    --bg-primary: linear-gradient(135deg, #3388DD 0%, #0066CC 50%, #008080 100%);
+    --bg-secondary: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #2C3E50;
+    --text-secondary: #7F8C8D;
+    --text-light: #BDC3C7;
+    --text-white: #FFFFFF;
+    --border-color: #BDC3C7;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --shadow-color-lg: rgba(0, 0, 0, 0.15);
+    
+    /* Grises modo claro */
+    --gray-dark: #2C3E50;
+    --gray-medium: #7F8C8D;
+    --gray-light: #BDC3C7;
+    --gray-lighter: #ECF0F1;
+    
+    /* Sistema de espaciado */
+    --space-xs: 0.5rem;
+    --space-sm: 1rem;
+    --space-md: 1.5rem;
+    --space-lg: 2rem;
+    --space-xl: 3rem;
+    --space-2xl: 4rem;
+    
+    /* Tipografía */
+    --font-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 2rem;
+    
+    /* Bordes y sombras */
+    --border-radius: 8px;
+    --border-radius-lg: 12px;
+    --box-shadow: 0 4px 6px var(--shadow-color);
+    --box-shadow-lg: 0 10px 25px var(--shadow-color-lg);
+    
+    /* Transiciones */
+    --transition: all 0.3s ease;
+}
+
+/* MODO OSCURO */
+[data-theme="dark"] {
+    --bg-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f1419 100%);
+    --bg-secondary: #16213e;
+    --bg-card: #2C3E50;
+    --text-primary: #ECF0F1;
+    --text-secondary: #BDC3C7;
+    --text-light: #95A5A6;
+    --text-white: #FFFFFF;
+    --border-color: #34495e;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    --shadow-color-lg: rgba(0, 0, 0, 0.6);
+    
+    /* Grises modo oscuro - MEJORADOS PARA CONTRASTE */
+    --gray-dark: #1a1a2e;
+    --gray-medium: #34495e;
+    --gray-light: #95A5A6;
+    --gray-lighter: #BDC3C7;
+    
+    /* Ajustes específicos para modo oscuro - MEJORADOS */
+    --canarias-yellow: #F1C40F;
+    --canarias-yellow-dark: #D4AC0D;
+    --canarias-yellow-light: #F7DC6F;
+    --eco-green: #27AE60;
+    --eco-green-light: #58D68D;
+}
+
+/* TOGGLE THEME BUTTON */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 85px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 50px;
+    padding: var(--space-sm);
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.theme-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow-lg);
+}
+
+.theme-toggle__icon {
+    font-size: 1.2rem;
+    transition: var(--transition);
+}
+
+.theme-toggle__text {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 80px;
+    text-align: center;
+}
+
+/* Iconos para cada modo - CORREGIDOS */
+.theme-toggle[data-theme="light"] .theme-toggle__icon {
+    color: var(--canarias-blue);
+}
+
+.theme-toggle[data-theme="dark"] .theme-toggle__icon {
+    color: var(--canarias-yellow);
+}
+
+/* USER AUTH BUTTONS */
+.user-auth-buttons {
+    position: fixed;
+    top: 85px;
+    right: 20px;
+    z-index: 999;
+    display: flex;
+    flex-direction: row;
+    gap: var(--space-sm);
+    justify-content: center;
+    align-items: center;
+}
+
+/* Menú hamburguesa - oculto por defecto */
+.hamburger-menu {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 40px;
+    height: 40px;
+    background: var(--canarias-blue);
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    padding: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+}
+
+.hamburger-menu:hover {
+    background: var(--canarias-yellow);
+    transform: scale(1.05);
+}
+
+.hamburger-line {
+    width: 100%;
+    height: 3px;
+    background: var(--canarias-white);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.hamburger-menu:hover .hamburger-line {
+    background: var(--gray-dark);
+}
+
+/* Animación para menú abierto */
+.hamburger-menu.active .hamburger-line:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger-menu.active .hamburger-line:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-menu.active .hamburger-line:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Contenedor de botones para desktop */
+.auth-buttons-container {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
+/* Menú desplegable móvil - oculto por defecto */
+.mobile-auth-menu {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: var(--space-md);
+    min-width: 200px;
+    border: 2px solid var(--canarias-blue);
+}
+
+.mobile-auth-menu.active {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Botones del menú móvil */
+.mobile-auth-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: var(--canarias-blue);
+    color: var(--canarias-white);
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.mobile-auth-btn:hover {
+    background: var(--canarias-yellow);
+    color: var(--gray-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.mobile-auth-btn--register {
+    background: var(--canarias-yellow);
+    color: var(--gray-dark);
+}
+
+.mobile-auth-btn--register:hover {
+    background: var(--canarias-blue);
+    color: var(--canarias-white);
+}
+
+.auth-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 50px;
+    padding: var(--space-sm) var(--space-md);
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: var(--font-primary);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-decoration: none;
+    min-width: 100px;
+}
+
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow-lg);
+}
+
+.auth-btn__icon {
+    font-size: 1.1rem;
+    transition: var(--transition);
+}
+
+.auth-btn__text {
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+/* Estilos específicos para cada botón */
+.auth-btn--login {
+    background: linear-gradient(135deg, var(--canarias-blue-light) 0%, var(--canarias-blue) 100%);
+    border-color: var(--canarias-blue);
+    color: var(--canarias-white);
+}
+
+.auth-btn--login .auth-btn__text {
+    color: var(--canarias-white);
+}
+
+.auth-btn--login:hover {
+    background: linear-gradient(135deg, var(--canarias-blue) 0%, var(--canarias-blue-dark) 100%);
+    border-color: var(--canarias-blue-dark);
+}
+
+.auth-btn--register {
+    background: linear-gradient(135deg, var(--canarias-yellow-light) 0%, var(--canarias-yellow) 100%);
+    border-color: var(--canarias-yellow);
+    color: var(--gray-dark);
+}
+
+.auth-btn--register .auth-btn__text {
+    color: var(--gray-dark);
+}
+
+.auth-btn--register:hover {
+    background: linear-gradient(135deg, var(--canarias-yellow) 0%, var(--canarias-yellow-dark) 100%);
+    border-color: var(--canarias-yellow-dark);
+}
+
+/* Efectos de hover para iconos */
+.auth-btn--login:hover .auth-btn__icon {
+    transform: scale(1.1);
+}
+
+.auth-btn--register:hover .auth-btn__icon {
+    transform: rotate(10deg) scale(1.1);
+}
+
+/* Ajustes para modo oscuro */
+[data-theme="dark"] .auth-btn--login {
+    background: linear-gradient(135deg, var(--canarias-blue) 0%, var(--canarias-blue-light) 100%);
+    box-shadow: 0 4px 15px rgba(51, 136, 221, 0.3);
+}
+
+[data-theme="dark"] .auth-btn--register {
+    background: linear-gradient(135deg, var(--canarias-yellow) 0%, var(--canarias-yellow-light) 100%);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+/* Efectos de pulso para llamar la atención */
+@keyframes pulse-auth {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.auth-btn--register {
+    animation: pulse-auth 3s ease-in-out infinite;
+}
+
+.auth-btn--register:hover {
+    animation: none;
+}
+
+/* Efecto de notificación para nuevos usuarios */
+.auth-btn--register::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 12px;
+    height: 12px;
+    background: #ff4757;
+    border-radius: 50%;
+    border: 2px solid var(--bg-card);
+    animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* Hover especial para el botón de login */
+.auth-btn--login {
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-btn--login::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.auth-btn--login:hover::before {
+    left: 100%;
+}
+
+/* Tooltips para los botones */
+.auth-btn {
+    position: relative;
+}
+
+.auth-btn::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    top: -35px;
+    transform: translateX(-50%);
+    background: var(--gray-dark);
+    color: var(--canarias-white);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1001;
+}
+
+.auth-btn:hover::after {
+    opacity: 1;
+}
+
+[data-theme="dark"] .auth-btn::after {
+    background: var(--canarias-white);
+    color: var(--gray-dark);
+}
+
+/* RESET Y BASE */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-primary);
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    min-height: 100vh;
+    transition: var(--transition);
+}
+
+/* COMPONENTES REUTILIZABLES */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-md);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-sm) var(--space-lg);
+    border: none;
+    border-radius: var(--border-radius);
+    font-family: var(--font-primary);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--box-shadow);
+}
+
+.btn--primary {
+    background: var(--canarias-yellow);
+    color: var(--gray-dark);
+    border: 2px solid var(--canarias-yellow);
+}
+
+.btn--primary:hover {
+    background: var(--canarias-yellow-dark);
+    border-color: var(--canarias-yellow-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow-lg);
+}
+
+.btn--secondary {
+    background: transparent;
+    color: var(--canarias-white);
+    border: 2px solid var(--canarias-white);
+}
+
+.btn--secondary:hover {
+    background: var(--canarias-white);
+    color: var(--canarias-blue);
+}
+
+.btn--eco {
+    background: var(--eco-green);
+    color: var(--canarias-white);
+    border: 2px solid var(--eco-green);
+}
+
+.btn--eco:hover {
+    background: var(--eco-green-light);
+    border-color: var(--eco-green-light);
+}
+
+/* CARDS */
+.card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+    border: 1px solid var(--border-color);
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--box-shadow-lg);
+}
+
+.card--canarias {
+    background: linear-gradient(135deg, var(--canarias-yellow-light) 0%, var(--canarias-yellow) 100%);
+    color: var(--gray-dark);
+    border: none;
+}
+
+.card--eco {
+    background: linear-gradient(135deg, var(--eco-green-light) 0%, var(--eco-green) 100%);
+    color: var(--canarias-white);
+}
+
+/* BADGES */
+.badge {
+    display: inline-block;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 20px;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge--canarias {
+    background: var(--canarias-yellow);
+    color: var(--gray-dark);
+}
+
+.badge--eco {
+    background: var(--eco-green);
+    color: var(--canarias-white);
+}
+
+.badge--ocean {
+    background: var(--eco-ocean);
+    color: var(--canarias-white);
+}
+
+/* TIPOGRAFÍA */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--canarias-white);
+    margin-bottom: var(--space-md);
+    font-weight: 700;
+}
+
+h1 {
+    font-size: var(--font-size-3xl);
+    color: var(--canarias-yellow);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+    font-size: var(--font-size-2xl);
+}
+
+h3 {
+    font-size: var(--font-size-xl);
+}
+
+p {
+    margin-bottom: var(--space-md);
+    color: var(--text-light);
+}
+
+/* UTILIDADES */
+.text-canarias-blue { color: var(--canarias-blue) !important; }
+.text-canarias-yellow { color: var(--canarias-yellow) !important; }
+.text-eco-green { color: var(--eco-green) !important; }
+.text-white { color: var(--text-white) !important; }
+.text-primary { color: var(--text-primary) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+.text-gray-medium { color: var(--gray-medium) !important; }
+
+.bg-canarias-blue { background-color: var(--canarias-blue) !important; }
+.bg-canarias-yellow { background-color: var(--canarias-yellow) !important; }
+.bg-eco-green { background-color: var(--eco-green) !important; }
+.bg-white { background-color: var(--canarias-white) !important; }
+
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mt-xl { margin-top: var(--space-xl); }
+
+.p-sm { padding: var(--space-sm); }
+.p-md { padding: var(--space-md); }
+.p-lg { padding: var(--space-lg); }
+.p-xl { padding: var(--space-xl); }
+
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 var(--space-sm);
+    }
+    
+    h1 {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .btn {
+        padding: var(--space-sm);
+        font-size: var(--font-size-sm);
+    }
+}
+
+/* EFECTOS ESPECIALES CANARIOS */
+.island-gradient {
+    background: linear-gradient(135deg, 
+        var(--canarias-blue) 0%, 
+        var(--eco-ocean) 25%, 
+        var(--canarias-yellow) 50%, 
+        var(--eco-green) 75%, 
+        var(--canarias-blue-dark) 100%
+    );
+}
+
+.ocean-wave {
+    background: linear-gradient(45deg, 
+        var(--canarias-blue) 25%, 
+        var(--eco-ocean) 25%, 
+        var(--eco-ocean) 50%, 
+        var(--canarias-blue) 50%, 
+        var(--canarias-blue) 75%, 
+        var(--eco-ocean) 75%
+    );
+    background-size: 40px 40px;
+    animation: wave 2s linear infinite;
+}
+
+@keyframes wave {
+    0% { background-position: 0 0; }
+    100% { background-position: 40px 40px; }
+}
+
+/* HEADER DEMO */
+.demo-header {
+    padding: var(--space-2xl) 0;
+    text-align: center;
+    background: var(--bg-primary);
+}
+
+.demo-content {
+    padding: var(--space-2xl) 0;
+    background: var(--bg-secondary);
+    min-height: 100vh;
+}
+
+.color-palette {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
+    margin: var(--space-xl) 0;
+}
+
+.color-sample {
+    padding: var(--space-lg);
+    border-radius: var(--border-radius);
+    text-align: center;
+    color: var(--canarias-white);
+    font-weight: 600;
+    border: 2px solid var(--border-color);
+}
+
+/* AJUSTES ESPECÍFICOS PARA MODO OSCURO */
+[data-theme="dark"] .card--canarias {
+    background: linear-gradient(135deg, var(--canarias-yellow) 0%, var(--canarias-yellow-dark) 100%);
+    color: var(--gray-dark) !important;
+}
+
+[data-theme="dark"] .card--canarias h3,
+[data-theme="dark"] .card--canarias p {
+    color: var(--gray-dark) !important;
+}
+
+[data-theme="dark"] .island-gradient {
+    background: linear-gradient(135deg, 
+        var(--canarias-blue-light) 0%, 
+        var(--eco-ocean) 25%, 
+        var(--canarias-yellow) 50%, 
+        var(--eco-green) 75%, 
+        var(--canarias-blue) 100%
+    );
+}
+
+[data-theme="dark"] footer {
+    background: var(--bg-card) !important;
+}
+
+/* MEJORAS DE CONTRASTE PARA MODO OSCURO */
+[data-theme="dark"] h2.text-canarias-blue {
+    color: var(--canarias-blue-light) !important;
+}
+
+[data-theme="dark"] h3.text-canarias-blue {
+    color: var(--canarias-blue-light) !important;
+}
+
+[data-theme="dark"] .text-gray-medium {
+    color: var(--gray-lighter) !important;
+}
+
+[data-theme="dark"] .color-sample {
+    border-color: var(--gray-lighter);
+}
+
+[data-theme="dark"] .card {
+    background: #34495e;
+    border-color: #4A6741;
+}
+
+[data-theme="dark"] .card h3 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .card p {
+    color: var(--text-light);
+}
+
+/* TOAST NOTIFICATIONS */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-lg);
+    border: 1px solid var(--border-color);
+    z-index: 1001;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast__content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.toast__icon {
+    font-size: 1.2rem;
+}
+
+.toast__text {
+    font-weight: 500;
+}
+
+/* RESPONSIVE PARA TOGGLE Y AUTH BUTTONS */
+@media (max-width: 768px) {
+    .theme-toggle {
+        top: 10px;
+        right: 60px;
+        padding: var(--space-xs);
+    }
+    
+    .theme-toggle__text {
+        display: none;
+    }
+    
+    .user-auth-buttons {
+        top: 70px;
+        right: 20px;
+        gap: var(--space-xs);
+        flex-direction: row;
+    }
+    
+    /* Ocultar botones normales en móvil */
+    .auth-buttons-container {
+        display: none;
+    }
+    
+    /* Mostrar menú hamburguesa en móvil */
+    .hamburger-menu {
+        display: flex;
+    }
+    
+    /* Ajustar otros elementos en móvil */
+    .auth-btn {
+        padding: var(--space-xs) var(--space-sm);
+        min-width: 70px;
+        font-size: 0.8rem;
+    }
+    
+    .auth-btn__text {
+        font-size: 0.75rem;
+    }
+    
+    .auth-btn__icon {
+        font-size: 1rem;
+    }
+}
+
+/* ANIMACIONES SUAVES PARA CAMBIO DE TEMA */
+*, *::before, *::after {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}

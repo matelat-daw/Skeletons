@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economía Circular de Canarias | Productos Locales</title>
+    <meta name="description" content="Descubre la Economía Circular en Canarias con Productos Locales y Sostenibles. Apoya a los Productores Canarios y fFomenta un Consumo Responsable. Si Compras Aquí, Vuelve a Ti.">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- TOGGLE THEME BUTTON -->
+    <button class="theme-toggle" id="themeToggle" data-theme="light">
+        <span class="theme-toggle__icon">🌙</span>
+        <span class="theme-toggle__text">Modo Oscuro</span>
+    </button>
+
+    <!-- USER AUTH BUTTONS -->
+    <div class="user-auth-buttons">
+        <!-- Menú hamburguesa para móvil -->
+        <button class="hamburger-menu" id="hamburgerMenu" aria-label="Menú de usuario">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+        
+        <!-- Botones normales para desktop -->
+        <div class="auth-buttons-container" id="authButtonsContainer">
+            <button class="auth-btn auth-btn--login" id="loginBtn" data-tooltip="Iniciar Sesión">
+                <span class="auth-btn__icon">👤</span>
+                <span class="auth-btn__text">Login</span>
+            </button>
+            <button class="auth-btn auth-btn--register" id="registerBtn" data-tooltip="Crear Cuenta Nueva">
+                <span class="auth-btn__icon">✨</span>
+                <span class="auth-btn__text">Registro</span>
+            </button>
+        </div>
+        
+        <!-- Menú desplegable para móvil -->
+        <div class="mobile-auth-menu" id="mobileAuthMenu">
+            <button class="mobile-auth-btn mobile-auth-btn--login" id="mobileLoginBtn">
+                <span class="auth-btn__icon">👤</span>
+                <span class="auth-btn__text">Iniciar Sesión</span>
+            </button>
+            <button class="mobile-auth-btn mobile-auth-btn--register" id="mobileRegisterBtn">
+                <span class="auth-btn__icon">✨</span>
+                <span class="auth-btn__text">Crear Cuenta</span>
+            </button>
+        </div>
+    </div>
+    <!-- HEADER DEMO -->
+    <header class="demo-header">
+        <div class="container">
+            <div class="badge badge--canarias mb-md">🏝️ Islas Canarias</div>
+            <h1>Economía Circular de Canarias</h1>
+            <p style="font-size: var(--font-size-lg); margin-bottom: var(--space-xl);">
+                Productos locales y sostenibles que impulsan nuestra economía circular
+            </p>
+            <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn--primary">🛒 Comprar Local</button>
+                <button class="btn btn--secondary">🌱 Conocer Más</button>
+                <button class="btn btn--eco">♻️ Economía Circular</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="demo-content">
+        <div class="container">
+            <section class="mb-xl">
+                <h2 class="text-canarias-blue text-center">Paleta de Colores Corporativos</h2>
+                <p class="text-center text-gray-medium mb-lg">
+                    Inspirada en los colores oficiales de la bandera de las Islas Canarias
+                </p>
+                
+                <div class="color-palette">
+                    <div class="color-sample" style="background: var(--canarias-blue);">
+                        <div>Azul Canario</div>
+                        <small>#0066CC</small>
+                    </div>
+                    <div class="color-sample" style="background: var(--canarias-yellow); color: var(--gray-dark);">
+                        <div>Amarillo Canario</div>
+                        <small>#FFD700</small>
+                    </div>
+                    <div class="color-sample" style="background: var(--eco-green);">
+                        <div>Verde Ecológico</div>
+                        <small>#2E8B57</small>
+                    </div>
+                    <div class="color-sample" style="background: var(--eco-ocean);">
+                        <div>Azul Océano</div>
+                        <small>#008080</small>
+                    </div>
+                    <div class="color-sample" style="background: var(--canarias-white); color: var(--gray-dark); border: 2px solid var(--gray-light);">
+                        <div>Blanco Canario</div>
+                        <small>#FFFFFF</small>
+                    </div>
+                    <div class="color-sample" style="background: var(--gray-dark);">
+                        <div>Gris Oscuro</div>
+                        <small>#2C3E50</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- EJEMPLOS DE COMPONENTES -->
+            <section class="mb-xl">
+                <h2 class="text-canarias-blue text-center mb-lg">Componentes con Identidad Canaria</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg);">
+                    
+                    <!-- Card Canarias -->
+                    <div class="card card--canarias">
+                        <div class="badge badge--eco mb-md">Producto Local</div>
+                        <h3 class="text-gray-dark">Queso Majorero</h3>
+                        <p class="text-gray-dark">
+                            Auténtico queso de cabra de Fuerteventura, elaborado de forma tradicional 
+                            por productores locales que mantienen vivas nuestras tradiciones.
+                        </p>
+                        <button class="btn btn--eco">Ver Producto</button>
+                    </div>
+
+                    <!-- Card Eco -->
+                    <div class="card card--eco">
+                        <div class="badge badge--canarias mb-md">Sostenible</div>
+                        <h3>Plátano de Canarias</h3>
+                        <p>
+                            Cultivado de manera sostenible en nuestras islas, el plátano canario 
+                            es símbolo de calidad y compromiso con el medio ambiente.
+                        </p>
+                        <button class="btn btn--secondary">Comprar Ahora</button>
+                    </div>
+
+                    <!-- Card Normal -->
+                    <div class="card">
+                        <div class="badge badge--ocean mb-md">Economía Circular</div>
+                        <h3 class="text-canarias-blue">Miel de Palma</h3>
+                        <p style="color: var(--gray-medium);">
+                            Producto artesanal único de La Palma, obtenido de la savia de la palmera 
+                            canaria siguiendo métodos ancestrales.
+                        </p>
+                        <button class="btn btn--primary">Descubrir</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN DE BADGES -->
+            <section class="mb-xl text-center">
+                <h2 class="text-canarias-blue mb-lg">Badges y Etiquetas</h2>
+                <div style="display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap;">
+                    <span class="badge badge--canarias">🏝️ Origen Canario</span>
+                    <span class="badge badge--eco">♻️ Sostenible</span>
+                    <span class="badge badge--ocean">🌊 Km 0</span>
+                    <span class="badge badge--canarias">🧀 Artesanal</span>
+                    <span class="badge badge--eco">🌱 Ecológico</span>
+                </div>
+            </section>
+
+            <!-- GRADIENTE ESPECIAL -->
+            <section class="text-center p-xl" style="border-radius: var(--border-radius-lg); margin: var(--space-xl) 0;">
+                <div class="island-gradient p-xl" style="border-radius: var(--border-radius-lg);">
+                    <h2 style="color: var(--canarias-white); text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                        "Si compras aquí, vuelve a Ti"
+                    </h2>
+                    <p style="color: var(--canarias-white); font-size: var(--font-size-lg); text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+                        Apoya la economía local canaria y contribuye a un futuro más sostenible
+                    </p>
+                    <button class="btn btn--secondary mt-md">🏝️ Únete al Movimiento</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- FOOTER DEMO -->
+    <footer style="background: var(--gray-dark); padding: var(--space-xl) 0; text-align: center;">
+        <div class="container">
+            <p style="color: var(--canarias-white); margin-bottom: var(--space-sm);">
+                💛 Hecho con amor en las Islas Canarias 💙
+            </p>
+            <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+                <span class="badge badge--canarias">Tenerife</span>
+                <span class="badge badge--eco">Gran Canaria</span>
+                <span class="badge badge--ocean">Lanzarote</span>
+                <span class="badge badge--canarias">Fuerteventura</span>
+                <span class="badge badge--eco">La Palma</span>
+                <span class="badge badge--ocean">La Gomera</span>
+                <span class="badge badge--canarias">El Hierro</span>
+            </div>
+        </div>
+    </footer>
+    <script src="js/script.js"></script>
+</body>
+</html>
