@@ -13,7 +13,12 @@ class AppRouter {
             '/productos': () => new ProductosComponent(),
             '/economia-circular': () => new EconomiaCircularComponent(),
             '/sobre-nosotros': () => new SobreNosotrosComponent(),
-            '/contacto': () => new ContactoComponent()
+            '/contacto': () => new ContactoComponent(),
+            '/login': () => new LoginComponent(),
+            '/register': () => new RegisterComponent(),
+            '/profile': () => new ProfileComponent(),
+            '/orders': () => new OrdersComponent(),
+            '/settings': () => new SettingsComponent()
         };
     }
 
