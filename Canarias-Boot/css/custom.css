@@ -1,0 +1,199 @@
+/* Custom CSS para Economía Circular de Canarias con Bootstrap */
+
+/* Colores Corporativos de Canarias */
+:root {
+    --canarias-blue: #0066CC;
+    --canarias-yellow: #FFD700;
+    --canarias-white: #FFFFFF;
+    --eco-green: #2E8B57;
+    --eco-ocean: #008080;
+    --gray-dark: #2C3E50;
+}
+
+/* Tema oscuro personalizado */
+[data-bs-theme="dark"] {
+    --bs-body-bg: #1a1a1a;
+    --bs-body-color: #ffffff;
+    --bs-primary: #0066CC;
+    --bs-secondary: #2C3E50;
+    --bs-success: #2E8B57;
+    --bs-info: #008080;
+    --bs-warning: #FFD700;
+    --bs-dark: #2C3E50;
+}
+
+/* Personalización de colores Bootstrap */
+.bg-primary {
+    background: linear-gradient(135deg, var(--canarias-blue), var(--eco-ocean)) !important;
+}
+
+.text-primary {
+    color: var(--canarias-blue) !important;
+}
+
+.btn-primary {
+    background: var(--canarias-blue);
+    border-color: var(--canarias-blue);
+}
+
+.btn-primary:hover {
+    background: #0052a3;
+    border-color: #0052a3;
+}
+
+.btn-warning {
+    background: var(--canarias-yellow);
+    border-color: var(--canarias-yellow);
+    color: var(--gray-dark);
+}
+
+.btn-warning:hover {
+    background: #e6c200;
+    border-color: #e6c200;
+    color: var(--gray-dark);
+}
+
+.btn-success {
+    background: var(--eco-green);
+    border-color: var(--eco-green);
+}
+
+.btn-success:hover {
+    background: #237346;
+    border-color: #237346;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, var(--canarias-blue), var(--eco-ocean));
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+}
+
+/* Cards personalizadas */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Badges personalizados */
+.badge {
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+/* Navbar personalizada */
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.navbar-toggler {
+    border: none;
+    padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+/* Footer */
+footer {
+    background: var(--gray-dark) !important;
+}
+
+/* Modales */
+.modal-content {
+    border-radius: 15px;
+    border: none;
+}
+
+.modal-header {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+/* Toasts */
+.toast {
+    border-radius: 10px;
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: 60vh;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Utilidades personalizadas */
+.bg-canarias-gradient {
+    background: linear-gradient(135deg, var(--canarias-blue), var(--canarias-yellow));
+}
+
+.bg-eco-gradient {
+    background: linear-gradient(135deg, var(--eco-green), var(--eco-ocean));
+}
+
+.text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Modo oscuro específico para elementos personalizados */
+[data-bs-theme="dark"] .card {
+    background-color: #2d2d2d;
+    border-color: #404040;
+}
+
+[data-bs-theme="dark"] .navbar {
+    background: linear-gradient(135deg, #0052a3, #006666) !important;
+}
+
+[data-bs-theme="dark"] .hero-section {
+    background: linear-gradient(135deg, #0052a3, #006666);
+}
+
+[data-bs-theme="dark"] .modal-content {
+    background-color: #2d2d2d;
+    color: #ffffff;
+}
+
+[data-bs-theme="dark"] .modal-header {
+    border-bottom-color: #404040;
+}
+
+[data-bs-theme="dark"] .modal-footer {
+    border-top-color: #404040;
+}
