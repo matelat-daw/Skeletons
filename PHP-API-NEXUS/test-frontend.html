@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏝️ Prueba Sistema Canarias</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #3498db, #f1c40f);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .online { background: #28a745; }
+        .offline { background: #dc3545; }
+        .unknown { background: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏝️ Sistema de Autenticación - Economía Circular Canarias</h1>
+        <p>Panel de pruebas para verificar la conectividad entre frontend y backend PHP</p>
+        
+        <!-- Estado del API -->
+        <div class="test-section">
+            <h3>📡 Estado del API</h3>
+            <p><span id="apiStatus" class="status-indicator unknown"></span><span id="apiStatusText">Verificando...</span></p>
+            <button onclick="checkApiStatus()">🔄 Verificar Estado</button>
+            <button onclick="testDatabase()">🗄️ Probar Base de Datos</button>
+            <div id="apiResult" class="result info" style="display: none;"></div>
+        </div>
+
+        <!-- Registro de Usuario -->
+        <div class="test-section">
+            <h3>👤 Registro de Usuario</h3>
+            <input type="text" id="registerName" placeholder="Nombre completo" value="Juan Pérez">
+            <input type="email" id="registerEmail" placeholder="Email" value="juan@test.com">
+            <input type="password" id="registerPassword" placeholder="Contraseña" value="123456789">
+            <input type="password" id="registerConfirmPassword" placeholder="Confirmar contraseña" value="123456789">
+            <label>
+                <input type="checkbox" id="registerTerms" checked> Acepto términos y condiciones
+            </label>
+            <br>
+            <button onclick="testRegister()">📝 Registrar Usuario</button>
+            <div id="registerResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Login de Usuario -->
+        <div class="test-section">
+            <h3>🔐 Login de Usuario</h3>
+            <input type="email" id="loginEmail" placeholder="Email" value="juan@test.com">
+            <input type="password" id="loginPassword" placeholder="Contraseña" value="123456789">
+            <label>
+                <input type="checkbox" id="loginRemember"> Recordarme
+            </label>
+            <br>
+            <button onclick="testLogin()">🚪 Iniciar Sesión</button>
+            <button onclick="testValidateToken()">✅ Validar Token</button>
+            <button onclick="testLogout()">🚪 Cerrar Sesión</button>
+            <div id="loginResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Estado de Autenticación -->
+        <div class="test-section">
+            <h3>🔍 Estado de Autenticación</h3>
+            <p><strong>Usuario autenticado:</strong> <span id="authStatus">No</span></p>
+            <p><strong>Usuario actual:</strong> <span id="currentUser">Ninguno</span></p>
+            <p><strong>Token:</strong> <span id="currentToken">No disponible</span></p>
+            <button onclick="refreshAuthStatus()">🔄 Actualizar Estado</button>
+        </div>
+
+        <!-- Logs de Actividad -->
+        <div class="test-section">
+            <h3>📋 Logs de Actividad</h3>
+            <button onclick="clearLogs()">🗑️ Limpiar Logs</button>
+            <div id="activityLogs" class="result info"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración
+        const API_BASE_URL = 'http://localhost/Skeletons/PHP-API-NEXUS';
+        
+        // Logs de actividad
+        let logs = [];
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            logs.unshift(`[${timestamp}] ${message}`);
+            if (logs.length > 20) logs.pop(); // Mantener solo 20 logs
+            
+            const logsElement = document.getElementById('activityLogs');
+            logsElement.textContent = logs.join('\n');
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function clearLogs() {
+            logs = [];
+            document.getElementById('activityLogs').textContent = '';
+        }
+        
+        // Estado del API
+        async function checkApiStatus() {
+            try {
+                addLog('🔄 Verificando estado del API...');
+                const response = await fetch(`${API_BASE_URL}/api/status`);
+                const data = await response.json();
+                
+                document.getElementById('apiStatus').className = 'status-indicator online';
+                document.getElementById('apiStatusText').textContent = 'API Online';
+                
+                showResult('apiResult', data, 'success');
+                addLog('✅ API está funcionando correctamente');
+                
+            } catch (error) {
+                document.getElementById('apiStatus').className = 'status-indicator offline';
+                document.getElementById('apiStatusText').textContent = 'API Offline';
+                
+                showResult('apiResult', { error: error.message }, 'error');
+                addLog(`❌ Error conectando con API: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testDatabase() {
+            try {
+                addLog('🔄 Probando conexión a base de datos...');
+                const response = await fetch(`${API_BASE_URL}/api/test/database`);
+                const data = await response.json();
+                
+                showResult('apiResult', data, response.ok ? 'success' : 'error');
+                addLog(response.ok ? '✅ Base de datos conectada' : '❌ Error en base de datos', response.ok ? 'info' : 'error');
+                
+            } catch (error) {
+                showResult('apiResult', { error: error.message }, 'error');
+                addLog(`❌ Error probando base de datos: ${error.message}`, 'error');
+            }
+        }
+        
+        // Registro
+        async function testRegister() {
+            const userData = {
+                name: document.getElementById('registerName').value,
+                email: document.getElementById('registerEmail').value,
+                password: document.getElementById('registerPassword').value,
+                confirmPassword: document.getElementById('registerConfirmPassword').value,
+                acceptTerms: document.getElementById('registerTerms').checked
+            };
+            
+            try {
+                addLog(`🔄 Registrando usuario: ${userData.email}`);
+                
+                const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                showResult('registerResult', data, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    addLog(`✅ Usuario registrado exitosamente: ${userData.email}`);
+                } else {
+                    addLog(`❌ Error en registro: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showResult('registerResult', { error: error.message }, 'error');
+                addLog(`❌ Error en registro: ${error.message}`, 'error');
+            }
+        }
+        
+        // Login
+        async function testLogin() {
+            const credentials = {
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPassword').value,
+                rememberMe: document.getElementById('loginRemember').checked
+            };
+            
+            try {
+                addLog(`🔄 Iniciando sesión: ${credentials.email}`);
+                
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(credentials)
+                });
+                
+                const data = await response.json();
+                showResult('loginResult', data, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    addLog(`✅ Login exitoso: ${credentials.email}`);
+                    refreshAuthStatus();
+                } else {
+                    addLog(`❌ Error en login: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showResult('loginResult', { error: error.message }, 'error');
+                addLog(`❌ Error en login: ${error.message}`, 'error');
+            }
+        }
+        
+        // Validar token
+        async function testValidateToken() {
+            try {
+                addLog('🔄 Validando token...');
+                
+                const response = await fetch(`${API_BASE_URL}/api/auth/validate`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                showResult('loginResult', data, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    addLog('✅ Token válido');
+                    refreshAuthStatus();
+                } else {
+                    addLog(`❌ Token inválido: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showResult('loginResult', { error: error.message }, 'error');
+                addLog(`❌ Error validando token: ${error.message}`, 'error');
+            }
+        }
+        
+        // Logout
+        async function testLogout() {
+            try {
+                addLog('🔄 Cerrando sesión...');
+                
+                const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                showResult('loginResult', data, 'info');
+                
+                addLog('✅ Sesión cerrada');
+                refreshAuthStatus();
+                
+            } catch (error) {
+                showResult('loginResult', { error: error.message }, 'error');
+                addLog(`❌ Error cerrando sesión: ${error.message}`, 'error');
+            }
+        }
+        
+        // Mostrar resultado
+        function showResult(elementId, data, type) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.textContent = JSON.stringify(data, null, 2);
+            element.style.display = 'block';
+        }
+        
+        // Actualizar estado de autenticación
+        function refreshAuthStatus() {
+            const cookies = document.cookie.split(';');
+            let authToken = null;
+            
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'canarias_auth_token') {
+                    authToken = value;
+                    break;
+                }
+            }
+            
+            document.getElementById('authStatus').textContent = authToken ? 'Sí' : 'No';
+            document.getElementById('currentToken').textContent = authToken ? `${authToken.substring(0, 20)}...` : 'No disponible';
+            
+            if (authToken) {
+                // Intentar decodificar el payload del JWT para mostrar info del usuario
+                try {
+                    const payloadBase64 = authToken.split('.')[1];
+                    const payload = JSON.parse(atob(payloadBase64));
+                    document.getElementById('currentUser').textContent = payload.email || 'Usuario autenticado';
+                } catch (e) {
+                    document.getElementById('currentUser').textContent = 'Usuario autenticado';
+                }
+            } else {
+                document.getElementById('currentUser').textContent = 'Ninguno';
+            }
+        }
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('🎯 Sistema de pruebas iniciado');
+            checkApiStatus();
+            refreshAuthStatus();
+        });
+    </script>
+</body>
+</html>

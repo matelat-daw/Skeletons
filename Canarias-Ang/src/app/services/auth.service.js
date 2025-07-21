@@ -1,9 +1,22 @@
-// Auth Service - Servicio de autenticación
+// Auth Service - Servicio de autenticación para Economía Circular Canarias
 class AuthService {
     constructor() {
-        this.baseUrl = 'https://api.economiacircularcanarias.com'; // URL del servidor
-        this.currentUser = null;
-        this.token = null;
+        this.baseUrl = 'http://localhost/Skeletons/PHP-API-NEXUS'; // URL del servidor PHP local
+        this.currentUs    // Obtener token de la cookie
+    getTokenFromCookie() {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'canarias_auth_token') {
+                console.log('🍪 Token encontrado en cookie');
+                return value;
+            }
+        }
+        console.log('🍪 No se encontró token en cookies');
+        return null;
+    }
+
+    // Verificar si el usuario está autenticado       this.token = null;
         this.init();
     }
 
@@ -18,17 +31,18 @@ class AuthService {
     // Registro de usuario
     async register(userData) {
         try {
-            const hashedPassword = await this.hashPassword(userData.password);
-            
+            // Preparar datos para el backend PHP (sin hashear la contraseña, se hace en el backend)
             const payload = {
                 name: userData.name,
                 email: userData.email,
-                password: hashedPassword,
-                confirmPassword: await this.hashPassword(userData.confirmPassword),
+                password: userData.password,
+                confirmPassword: userData.confirmPassword,
                 acceptTerms: userData.acceptTerms
             };
 
-            const response = await fetch(`${this.baseUrl}/auth/register`, {
+            console.log('🔄 Enviando registro al servidor...', payload);
+
+            const response = await fetch(`${this.baseUrl}/api/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -38,11 +52,12 @@ class AuthService {
             });
 
             const data = await response.json();
+            console.log('📩 Respuesta del servidor:', data);
 
-            if (response.ok) {
+            if (response.ok && data.success) {
                 return {
                     success: true,
-                    message: 'Registro exitoso. Revisa tu email para confirmar tu cuenta.',
+                    message: data.message || 'Registro exitoso. Revisa tu email para confirmar tu cuenta.',
                     data: data
                 };
             } else {
@@ -65,15 +80,16 @@ class AuthService {
     // Login de usuario
     async login(credentials) {
         try {
-            const hashedPassword = await this.hashPassword(credentials.password);
-            
+            // Enviar contraseña sin hashear, el backend se encarga del hashing
             const payload = {
                 email: credentials.email,
-                password: hashedPassword,
+                password: credentials.password, // Sin hashear
                 rememberMe: credentials.rememberMe || false
             };
 
-            const response = await fetch(`${this.baseUrl}/auth/login`, {
+            console.log('🔄 Enviando login al servidor...', { email: payload.email, rememberMe: payload.rememberMe });
+
+            const response = await fetch(`${this.baseUrl}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -83,8 +99,9 @@ class AuthService {
             });
 
             const data = await response.json();
+            console.log('📩 Respuesta de login:', data);
 
-            if (response.ok) {
+            if (response.ok && data.success) {
                 this.token = data.token;
                 this.currentUser = data.user;
                 
@@ -94,7 +111,7 @@ class AuthService {
                 
                 return {
                     success: true,
-                    message: 'Login exitoso',
+                    message: data.message || 'Login exitoso',
                     user: this.currentUser
                 };
             } else {
@@ -117,7 +134,9 @@ class AuthService {
     // Logout
     async logout() {
         try {
-            const response = await fetch(`${this.baseUrl}/auth/logout`, {
+            console.log('🔄 Cerrando sesión...');
+            
+            const response = await fetch(`${this.baseUrl}/api/auth/logout`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${this.token}`,
@@ -125,6 +144,9 @@ class AuthService {
                 },
                 credentials: 'include'
             });
+
+            const data = await response.json();
+            console.log('📩 Respuesta de logout:', data);
 
             // Limpiar datos locales independientemente de la respuesta del servidor
             this.token = null;
@@ -135,7 +157,7 @@ class AuthService {
             
             return {
                 success: true,
-                message: 'Sesión cerrada exitosamente'
+                message: data.message || 'Sesión cerrada exitosamente'
             };
         } catch (error) {
             console.error('Error en logout:', error);
@@ -179,10 +201,15 @@ class AuthService {
 
     // Validar token actual
     async validateToken() {
-        if (!this.token) return false;
+        if (!this.token) {
+            console.log('🔍 No hay token para validar');
+            return false;
+        }
 
         try {
-            const response = await fetch(`${this.baseUrl}/auth/validate`, {
+            console.log('🔍 Validando token...');
+            
+            const response = await fetch(`${this.baseUrl}/api/auth/validate`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${this.token}`,
@@ -190,30 +217,27 @@ class AuthService {
                 credentials: 'include'
             });
 
-            if (response.ok) {
-                const data = await response.json();
+            const data = await response.json();
+            console.log('📩 Respuesta de validación:', data);
+
+            if (response.ok && data.success && data.valid) {
                 this.currentUser = data.user;
                 this.dispatchAuthEvent('validated', this.currentUser);
                 return true;
             } else {
-                this.logout();
+                // Token inválido, limpiar datos
+                this.token = null;
+                this.currentUser = null;
+                this.dispatchAuthEvent('logout');
                 return false;
             }
         } catch (error) {
             console.error('Error validando token:', error);
-            this.logout();
+            this.token = null;
+            this.currentUser = null;
+            this.dispatchAuthEvent('logout');
             return false;
         }
-    }
-
-    // Cifrar password con SHA-512
-    async hashPassword(password) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(password);
-        const hashBuffer = await crypto.subtle.digest('SHA-512', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex;
     }
 
     // Obtener token de la cookie
@@ -221,10 +245,12 @@ class AuthService {
         const cookies = document.cookie.split(';');
         for (let cookie of cookies) {
             const [name, value] = cookie.trim().split('=');
-            if (name === 'auth_token') {
+            if (name === 'canarias_auth_token') {
+                console.log('🍪 Token encontrado en cookie');
                 return decodeURIComponent(value);
             }
         }
+        console.log('🍪 No se encontró token en cookies');
         return null;
     }
 

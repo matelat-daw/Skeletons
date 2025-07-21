@@ -1,0 +1,62 @@
+# Configuración Apache para API Economía Circular Canarias
+# Reescritura de URLs y configuración de seguridad
+
+RewriteEngine On
+
+# Reescribir todas las peticiones de /api/* hacia canarias-api.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.*)$ canarias-api.php [QSA,L]
+
+# También permitir acceso directo a canarias-api.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^canarias-api/?(.*)$ canarias-api.php [QSA,L]
+
+# Configuración de CORS
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+Header always set Access-Control-Allow-Credentials "true"
+Header always set Access-Control-Max-Age "3600"
+
+# Configuración de seguridad
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set X-XSS-Protection "1; mode=block"
+
+# Permitir archivos JSON y logs
+<Files "*.json">
+    Order allow,deny
+    Allow from all
+</Files>
+
+<Files "*.log">
+    Order deny,allow
+    Deny from all
+</Files>
+
+# Configuración de PHP
+php_flag display_errors Off
+php_flag log_errors On
+php_value error_log "logs/php_errors.log"
+
+# Configuración de charset
+AddDefaultCharset UTF-8
+
+# Tipos MIME
+AddType application/json .json
+AddType text/plain .log
+
+# Compresión
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Cache control para API
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType application/json "access plus 0 seconds"
+    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
